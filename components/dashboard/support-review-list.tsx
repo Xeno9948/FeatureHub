@@ -18,6 +18,8 @@ import {
   User,
   CheckCircle,
   RotateCcw,
+  Paperclip,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -62,9 +64,27 @@ export function SupportReviewList() {
         setRequests(data);
       }
     } catch (error) {
-      console.error("Error fetching requests:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownload = async (attachment: any) => {
+    try {
+      const res = await fetch("/api/upload/url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cloudStoragePath: attachment.cloudStoragePath,
+          isPublic: attachment.isPublic || false,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to get download URL");
+      const { url } = await res.json();
+      window.open(url, "_blank");
+    } catch (error) {
+      toast.error(language === "nl" ? "Fout bij openen bestand" : "Error opening file");
     }
   };
 
@@ -196,6 +216,29 @@ export function SupportReviewList() {
                   >
                     {selectedRequest.category.name}
                   </Badge>
+                </div>
+              )}
+
+              {selectedRequest.attachments?.length > 0 && (
+                <div className="pt-2">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                    <Paperclip className="w-4 h-4 text-gray-500" />
+                    {language === "nl" ? "Bijlagen" : "Attachments"} ({selectedRequest.attachments.length})
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedRequest.attachments.map((att: any) => (
+                      <Button
+                        key={att.id}
+                        variant="outline"
+                        size="sm"
+                        className="bg-white"
+                        onClick={() => handleDownload(att)}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        <span className="max-w-[200px] truncate">{att.fileName}</span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               )}
 
