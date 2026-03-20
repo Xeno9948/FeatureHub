@@ -157,8 +157,11 @@ export async function POST(request: NextRequest) {
       const appName = appUrl ? new URL(appUrl).hostname.split('.')[0] : 'FeatureHub';
       
       const htmlBody = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333; border-bottom: 2px solid #3B82F6; padding-bottom: 10px;">
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; border: 1px solid #e5e7eb; padding: 30px;">
+          <div style="text-align: center; padding-bottom: 20px;">
+            ${appUrl ? `<img src="${appUrl}/logo.jpg" alt="Klantenvertellen" style="max-height: 45px; margin: 0 auto;" />` : `<h2 style="color: #ea580c; margin: 0;">Klantenvertellen</h2>`}
+          </div>
+          <h2 style="color: #333; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-top: 0;">
             📝 Nieuw Functieverzoek Ingediend
           </h2>
           <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -167,21 +170,21 @@ export async function POST(request: NextRequest) {
             ${requestedBy ? `<p style="margin: 10px 0;"><strong>Aangevraagd door:</strong> ${requestedBy}</p>` : ''}
             <p style="margin: 10px 0;"><strong>Ingediend door:</strong> ${user.name || user.email}</p>
             <p style="margin: 15px 0 5px 0;"><strong>Beschrijving:</strong></p>
-            <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #3B82F6;">
+            <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #ea580c;">
               ${description.replace(/\n/g, '<br>')}
             </div>
             ${businessJustification ? `
               <p style="margin: 15px 0 5px 0;"><strong>Zakelijke Onderbouwing:</strong></p>
-              <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #10B981;">
+              <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #16a34a;">
                 ${businessJustification.replace(/\n/g, '<br>')}
               </div>
             ` : ''}
             ${attachments?.length ? `<p style="margin: 15px 0;"><strong>Bijlagen:</strong> ${attachments.length} bestand(en)</p>` : ''}
           </div>
-          <p style="color: #666; font-size: 12px;">
+          <p style="color: #666; font-size: 12px; border-top: 1px solid #e5e7eb; padding-top: 15px;">
             Ingediend op: ${new Date().toLocaleString('nl-NL')}
           </p>
-          ${appUrl ? `<p style="margin-top: 20px;"><a href="${appUrl}/dashboard/request/${newRequest.id}" style="background: #3B82F6; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">Bekijk Verzoek</a></p>` : ''}
+          ${appUrl ? `<p style="margin-top: 20px; text-align: center;"><a href="${appUrl}/dashboard/request/${newRequest.id}" style="background: #ea580c; color: #ffffff !important; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: bold;">Bekijk Verzoek</a></p>` : ''}
         </div>
       `;
 
