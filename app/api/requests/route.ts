@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/db";
 import { RequestStatus, Role } from "@prisma/client";
+import { sendEmail } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
   try {
@@ -192,25 +193,11 @@ export async function POST(request: NextRequest) {
         let status = 'SENT';
         let errorMsg = null;
         try {
-          const emailRes = await fetch('https://apps.abacus.ai/api/sendNotificationEmail', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              deployment_token: process.env.ABACUSAI_API_KEY,
-              app_id: process.env.WEB_APP_ID,
-              notification_id: process.env.NOTIF_ID_NIEUW_FUNCTIEVERZOEK,
-              subject: `Nieuw Functieverzoek: ${title}`,
-              body: htmlBody,
-              is_html: true,
-              recipient_email: recipient,
-              sender_email: appUrl ? `noreply@${new URL(appUrl).hostname}` : undefined,
-              sender_alias: 'FeatureHub',
-            }),
+          await sendEmail({
+            to: recipient,
+            subject: `Nieuw Functieverzoek: ${title}`,
+            htmlBody: htmlBody,
           });
-          if (!emailRes.ok) {
-            status = 'FAILED';
-            errorMsg = `HTTP ${emailRes.status}`;
-          }
         } catch (e: any) {
           status = 'FAILED';
           errorMsg = e.message;
