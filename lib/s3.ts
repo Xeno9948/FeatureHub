@@ -39,7 +39,7 @@ export async function getFileUrl(
   const command = new GetObjectCommand({
     Bucket: bucketName,
     Key: cloudStoragePath,
-    ResponseContentDisposition: "attachment",
+    ResponseContentDisposition: "inline",
   });
 
   return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
