@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LogOut, User, Globe } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 interface HeaderProps {
@@ -17,6 +19,17 @@ interface HeaderProps {
 
 export function DashboardHeader({ user }: HeaderProps) {
   const { language, setLanguage, t } = useLanguage();
+  const [isSimulatingUser, setIsSimulatingUser] = useState(false);
+  const router = useRouter();
+
+  // Check if we are simulating the USER role on mount
+  useEffect(() => {
+    const cookieValue = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("simulateUserRole="))
+      ?.split("=")[1];
+    setIsSimulatingUser(cookieValue === "true");
+  }, []);
 
   const roleColors: Record<string, string> = {
     USER: "bg-orange-100 text-orange-800",
@@ -27,6 +40,17 @@ export function DashboardHeader({ user }: HeaderProps) {
 
   const toggleLanguage = () => {
     setLanguage(language === "nl" ? "en" : "nl");
+  };
+
+  const toggleSimulateUserRole = () => {
+    const newValue = !isSimulatingUser;
+    
+    // Set a document cookie to expire quickly or end of session
+    document.cookie = `simulateUserRole=${newValue}; path=/; max-age=86400`;
+    setIsSimulatingUser(newValue);
+    
+    // Force a full page reload so Next.js server components read the cookie
+    window.location.reload();
   };
 
   return (
@@ -53,6 +77,18 @@ export function DashboardHeader({ user }: HeaderProps) {
           </Button>
 
           <div className="flex items-center gap-2">
+            
+            {user?.role === "ADMIN" && (
+              <Button
+                variant={isSimulatingUser ? "default" : "outline"}
+                size="sm"
+                onClick={toggleSimulateUserRole}
+                className="hidden sm:flex"
+              >
+                {isSimulatingUser ? "Exit User View" : "User View"}
+              </Button>
+            )}
+
             <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
               <User className="w-4 h-4 text-gray-600" />
             </div>

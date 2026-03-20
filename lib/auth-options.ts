@@ -55,17 +55,25 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // Auto-promote Rene to ADMIN
-        if (user.email === "schouwman@ekomi-group.com" && (user as any).role !== "ADMIN") {
-          try {
+        const superAdmins = ["schouwman@ekomi-group.com", "marketing@kiyoh.co.za"];
+        const isSuperAdmin = user.email && superAdmins.includes(user.email);
+        
+        try {
+          const updateData: any = { lastLogin: new Date() };
+          
+          if (isSuperAdmin && (user as any).role !== "ADMIN") {
+            updateData.role = "ADMIN";
+            (user as any).role = "ADMIN";
+          }
+          
+          if (user.email) {
             await prisma.user.update({
               where: { email: user.email },
-              data: { role: "ADMIN" },
+              data: updateData,
             });
-            (user as any).role = "ADMIN";
-          } catch (e) {
-            console.error("Failed to auto-promote admin:", e);
           }
+        } catch (e) {
+          console.error("Failed to update user login data:", e);
         }
 
         token.id = user.id;

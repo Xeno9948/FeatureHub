@@ -22,8 +22,10 @@ export async function POST(request: NextRequest) {
     }
 
     let systemPrompt = `Je bent een behulpzame assistent die gebruikers helpt bij het schrijven van hoogwaardige functieverzoeken voor een bedrijfsapplicatie. Je antwoorden moeten professioneel, duidelijk en uitvoerbaar zijn. Antwoord altijd in het Nederlands.
+    
+BELANGRIJK: Geef NOOIT de naam van het veld op. Geef geen introducties of voorvoegsels (zoals "Titel:", "Beschrijving:", etc.). Genereer EXCLUSIEF alleen de uiteindelijke onbewerkte tekstbestemming voor de specifieke textarea waarop de gebruiker zojuist heeft geklikt.
 
-Je helpt bij het verbeteren van het "${field}" veld van een functieverzoek.`;
+Je helpt momenteel uitsluitend bij het verbeteren van het "${field}" veld. Reageer alsof je de ruwe tekst bent die onzichtbaar in dat tekstvak wordt geplakt.`;
 
     let userPrompt = "";
 
@@ -71,13 +73,14 @@ Voor de redenering moet je:
         systemPrompt += `
 
 Voor titels moet je:
-- Beknopt zijn (5-10 woorden)
+- Beknopt zijn (maximaal 5-10 woorden in totaal)
 - De functie duidelijk beschrijven
 - Actiewoorden gebruiken
-- Jargon vermijden`;
+- Jargon vermijden
+- OPMERKING: Genereer uitsluitend de titel. Zet er geen getal of "Titel:" voor. Geef niet 3 suggesties, kies er zelf 1 die het sterkst is.`;
         userPrompt = currentValue
-          ? `Stel 3 verbeterde titels voor voor dit functieverzoek. Huidige titel: "${currentValue}"\n\n${context ? `Context: ${context}` : ""}`
-          : `Stel 3 goede titels voor voor een functie met deze beschrijving:\n\n${context || "Een nieuwe functie"}`;
+          ? `Stel 1 sterk verbeterde titel voor dit functieverzoek voor. Huidige titel: "${currentValue}"\n\n${context ? `Context: ${context}` : ""}`
+          : `Stel 1 sterke, korte titel voor een functie met deze beschrijving voor:\n\n${context || "Een nieuwe functie"}`;
         break;
 
       default:

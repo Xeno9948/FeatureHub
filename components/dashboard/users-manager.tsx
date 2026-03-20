@@ -34,6 +34,7 @@ interface UserData {
   email: string;
   role: string;
   createdAt: string;
+  lastLogin?: string | null;
   _count: { requests: number };
 }
 
@@ -97,7 +98,8 @@ export function UsersManager() {
       userUpdated: "Gebruiker bijgewerkt",
       userDeleted: "Gebruiker verwijderd",
       error: "Er is een fout opgetreden",
-      emailExists: "E-mailadres bestaat al",
+      emailExists: "Email already exists",
+      lastLogin: "Laatste Login",
     },
     en: {
       title: "User Management",
@@ -121,6 +123,7 @@ export function UsersManager() {
       userDeleted: "User deleted",
       error: "An error occurred",
       emailExists: "Email already exists",
+      lastLogin: "Last Login",
     },
   };
 
@@ -356,6 +359,11 @@ export function UsersManager() {
                         <span>
                           {txt.created}: {new Date(user.createdAt).toLocaleDateString(language === "nl" ? "nl-NL" : "en-GB")}
                         </span>
+                        {user.lastLogin && (
+                          <span>
+                            • {txt.lastLogin}: {new Date(user.lastLogin).toLocaleDateString(language === "nl" ? "nl-NL" : "en-GB")}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
