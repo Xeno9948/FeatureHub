@@ -84,14 +84,14 @@ Voor titels moet je:
         userPrompt = `Help deze inhoud te verbeteren voor een functieverzoek:\n\n"${currentValue || context || ""}"`;
     }
 
-    const response = await fetch('https://medici-holding.abacus.ai/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.ABACUSAI_API_KEY}`
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-mini',
+        model: 'gpt-4o-mini',
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
