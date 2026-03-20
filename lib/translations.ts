@@ -464,6 +464,238 @@ export const translations = {
       learnMore: "Learn More",
     },
   },
+
+  de: {
+    // Header
+    appName: "FeatureHub",
+    logout: "Abmelden",
+    
+    // Roles
+    roles: {
+      USER: "Benutzer",
+      SUPPORT: "Produktsupport",
+      ADMIN: "Produkt-Admin",
+      VIEWER: "Betrachter",
+    },
+    
+    // Sidebar
+    sidebar: {
+      dashboard: "Dashboard",
+      newRequest: "Neue Anfrage",
+      myRequests: "Meine Anfragen",
+      reviewQueue: "Warteschlange für Überprüfungen",
+      finalReview: "Endgültige Überprüfung",
+      allRequests: "Alle Anfragen",
+      analytics: "Analysen",
+      categories: "Kategorien",
+      users: "Benutzer",
+      help: "Hilfe",
+    },
+    
+    // Status labels
+    status: {
+      SUBMITTED: "Eingereicht",
+      UNDER_REVIEW: "In Überprüfung",
+      FINAL_REVIEW: "Endgültige Überprüfung",
+      ACCEPTED: "Akzeptiert",
+      DECLINED: "Abgelehnt",
+      RETURNED: "Zurückgesendet",
+    },
+    
+    // Priority labels
+    priority: {
+      LOW: "Niedrig",
+      MEDIUM: "Mittel",
+      HIGH: "Hoch",
+      CRITICAL: "Kritisch",
+    },
+    
+    // Common
+    common: {
+      back: "Zurück",
+      cancel: "Abbrechen",
+      save: "Speichern",
+      submit: "Einreichen",
+      delete: "Löschen",
+      edit: "Bearbeiten",
+      view: "Ansicht",
+      search: "Suche",
+      filter: "Filter",
+      loading: "Wird geladen...",
+      noResults: "Keine Ergebnisse gefunden",
+      submittedOn: "Eingereicht am",
+      requestedBy: "Angefordert von",
+      submittedBy: "Eingereicht von",
+      attachments: "Anhänge",
+      allStatuses: "Alle Status",
+      allPriorities: "Alle Prioritäten",
+    },
+    
+    // Forms
+    form: {
+      title: "Titel",
+      description: "Beschreibung",
+      businessJustification: "Geschäftliche Begründung",
+      reason: "Warum wird das benötigt?",
+      category: "Kategorie",
+      selectCategory: "Kategorie auswählen...",
+      requestedByField: "Angefordert von",
+      requestedByPlaceholder: "Name der Person, die dies angefordert hat",
+      requestedByHelp: "Geben Sie den Namen der Person ein, in deren Namen Sie diese Anfrage einreichen.",
+      titlePlaceholder: "Kurzer, aussagekräftiger Titel für Ihre Anfrage",
+      descriptionPlaceholder: "Beschreiben Sie die Funktion im Detail. Was soll sie tun? Wie soll sie funktionieren?",
+      businessJustificationPlaceholder: "Welchen geschäftlichen Wert bringt dies? Wie wirkt es sich auf Umsatz, Effizienz oder Kundenzufriedenheit aus?",
+      reasonPlaceholder: "Erklären Sie die Schmerzpunkte oder Probleme, die diese Funktion lösen würde.",
+      required: "erforderlich",
+    },
+    
+    // AI Assist
+    ai: {
+      suggestion: "KI-Vorschlag",
+      improve: "KI Verbessern",
+      applySuggestion: "Vorschlag anwenden",
+      close: "Schließen",
+      generating: "Vorschlag wird generiert...",
+      applied: "KI-Vorschlag angewendet!",
+      suggestionFor: "KI-Vorschlag für",
+    },
+    
+    // Upload
+    upload: {
+      attachments: "Anhänge",
+      clickToUpload: "Klicken Sie zum Hochladen von Screenshots oder Dokumenten",
+      uploadSuccess: "Dateien erfolgreich hochgeladen",
+      uploadError: "Fehler beim Hochladen von Dateien",
+    },
+    
+    // Messages
+    messages: {
+      submitSuccess: "Funktionsanfrage erfolgreich eingereicht!",
+      submitError: "Fehler beim Einreichen der Anfrage",
+      titleDescriptionRequired: "Titel und Beschreibung sind erforderlich",
+      noteAdded: "Notiz hinzugefügt",
+      noteError: "Fehler beim Hinzufügen der Notiz",
+    },
+    
+    // Dashboard
+    dashboard: {
+      welcome: "Willkommen",
+      recentRequests: "Letzte Anfragen",
+      pendingReview: "Ausstehende Überprüfung",
+      totalRequests: "Anfragen insgesamt",
+      acceptedRequests: "Akzeptiert",
+      declinedRequests: "Abgelehnt",
+      noRequestsYet: "Noch keine Anfragen",
+      noRequestsToReview: "Keine Anfragen zur Überprüfung",
+      submitFirstRequest: "Ihre erste Anfrage einreichen",
+    },
+    
+    // Review
+    review: {
+      openRequests: "Offene Anfragen",
+      selectPriority: "Wählen Sie eine Prioritätsstufe aus",
+      submitToAdmin: "An Admin übermitteln",
+      supportNotes: "Support-Notizen",
+      adminNotes: "Admin-Notizen",
+      declineReason: "Ablehnungsgrund",
+      accept: "Akzeptieren",
+      decline: "Ablehnen",
+      returnToSupport: "Zurück an Support",
+      moreInfoNeeded: "Mehr Infos benötigt",
+      new: "Neu",
+      waitingForDecision: "Warten auf Entscheidung",
+      noRequestsPending: "Keine Anfragen zur Überprüfung ausstehend",
+      allProcessed: "Alle Anfragen wurden bearbeitet.",
+      accepted: "Anfrage akzeptiert!",
+      declined: "Anfrage abgelehnt",
+      returnedToSupport: "Zurück an Support",
+    },
+    
+    // Analytics
+    analytics: {
+      title: "Analyse-Dashboard",
+      requestsByStatus: "Anfragen nach Status",
+      requestsByCategory: "Anfragen nach Kategorie",
+      requestsByPriority: "Anfragen nach Priorität",
+      requestsOverTime: "Anfragen im zeitlichen Verlauf",
+      avgProcessingTime: "Durchschn. Bearbeitungszeit",
+      days: "Tage",
+    },
+    
+    // Categories
+    categories: {
+      title: "Kategorien verwalten",
+      addNew: "Neue Kategorie",
+      name: "Name",
+      description: "Beschreibung",
+      color: "Farbe",
+      requestCount: "Anfragen",
+      noCategories: "Noch keine Kategorien",
+      created: "Kategorie erstellt!",
+      updated: "Kategorie aktualisiert!",
+      deleted: "Kategorie gelöscht!",
+    },
+    
+    // Login/Signup
+    auth: {
+      login: "Anmelden",
+      signup: "Registrieren",
+      email: "E-Mail-Adresse",
+      password: "Passwort",
+      confirmPassword: "Passwort bestätigen",
+      name: "Vollständiger Name",
+      rememberMe: "Angemeldet bleiben",
+      forgotPassword: "Passwort vergessen?",
+      noAccount: "Sie haben kein Konto?",
+      haveAccount: "Haben Sie bereits ein Konto?",
+      loginError: "Ungültige Anmeldeinformationen",
+      signupError: "Registrierung fehlgeschlagen",
+    },
+    
+    // Help
+    help: {
+      title: "Hilfe & Leitfaden",
+      overview: "Übersicht",
+      overviewText: "Mit FeatureHub können Sie Funktionsanfragen einreichen, überprüfen und verfolgen.",
+      yourRole: "Ihre Rolle",
+      workflowTitle: "Wie funktioniert das?",
+      workflowSteps: [
+        { step: "1. Einreichung", desc: "Ein Benutzer reicht eine Funktionsanfrage mit Titel, Beschreibung und geschäftlicher Begründung ein." },
+        { step: "2. Support", desc: "Der Produktsupport überprüft die Anfrage und leitet sie weiter." },
+        { step: "3. Admin", desc: "Der Produkt-Admin trifft die endgültige Entscheidung." },
+      ],
+      rolesTitle: "Rollen erklärt",
+      roleDescriptions: {
+        USER: "Sie können neue Funktionsanfragen einreichen und Ihre eigenen Anfragen verfolgen.",
+        SUPPORT: "Sie überprüfen eingereichte Anfragen und leiten diese weiter.",
+        ADMIN: "Sie treffen die endgültige Entscheidung über Funktionsanfragen.",
+        VIEWER: "Sie haben Lesezugriff auf das Dashboard.",
+      },
+      tipsTitle: "Nützliche Tipps",
+      tips: [
+        "Verwenden Sie KI für bessere Formulierungen.",
+        "Fügen Sie detaillierte Screenshots hinzu.",
+        "Achten Sie auf das Sprachen-Umschaltwerkzeug."
+      ],
+      statusTitle: "Statusübersicht",
+      statusDescriptions: {
+        SUBMITTED: "Wartet auf Überprüfung.",
+        UNDER_REVIEW: "Vom Support an Admin weitergeleitet.",
+        FINAL_REVIEW: "Admin entscheidet.",
+        ACCEPTED: "Die Anfrage wurde genehmigt.",
+        DECLINED: "Die Anfrage wurde abgelehnt.",
+        RETURNED: "Die Anfrage benötigt Klärung.",
+      },
+    },
+
+    // Landing page
+    landing: {
+      title: "FeatureHub",
+      subtitle: "Verfolgen und erstellen Sie mühelos Produktanfragen",
+      getStarted: "Jetzt starten",
+      learnMore: "Mehr erfahren",
+    },
+  },
 };
 
 export type Language = keyof typeof translations;

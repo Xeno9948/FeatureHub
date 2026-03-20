@@ -55,6 +55,11 @@ export function SupportReviewList() {
   const [submitting, setSubmitting] = useState(false);
   const [translatedRequest, setTranslatedRequest] = useState<any>(null);
   const [isTranslating, setIsTranslating] = useState(false);
+  const [targetTranslationLang, setTargetTranslationLang] = useState<"nl" | "en" | "de">("en");
+
+  useEffect(() => {
+    setTargetTranslationLang(language as "nl" | "en" | "de");
+  }, [language]);
 
   useEffect(() => {
     fetchRequests();
@@ -95,7 +100,7 @@ export function SupportReviewList() {
   const handleTranslate = async () => {
     if (!selectedRequest) return;
     
-    if (translatedRequest?.id === selectedRequest.id) {
+    if (translatedRequest?.id === selectedRequest.id && translatedRequest.targetLanguage === targetTranslationLang) {
       setTranslatedRequest(null);
       return;
     }
@@ -106,7 +111,7 @@ export function SupportReviewList() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          targetLanguage: language,
+          targetLanguage: targetTranslationLang,
           textObjects: {
             title: selectedRequest.title,
             description: selectedRequest.description,
@@ -121,6 +126,7 @@ export function SupportReviewList() {
       const textObjects = await res.json();
       setTranslatedRequest({
         id: selectedRequest.id,
+        targetLanguage: targetTranslationLang,
         ...textObjects
       });
       toast.success(language === "nl" ? "Vertaald!" : "Translated!");
@@ -243,21 +249,39 @@ export function SupportReviewList() {
         {selectedRequest ? (
           <Card className="sticky top-6">
             <CardHeader className="flex flex-row items-start justify-between pb-2">
-              <CardTitle className="text-xl max-w-[70%]">
-                {translatedRequest?.id === selectedRequest.id ? translatedRequest.title : selectedRequest.title}
-              </CardTitle>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleTranslate} 
-                disabled={isTranslating}
-                className="flex items-center gap-2 h-8"
-              >
-                {isTranslating ? <Loader2 className="w-3 h-3 animate-spin" /> : "🌐"}
-                {translatedRequest?.id === selectedRequest.id 
-                  ? (language === "nl" ? "Origineel" : "Original")
-                  : (language === "nl" ? "Vertaal Ticket" : "Translate")}
-              </Button>
+              <div className="flex flex-col gap-1 max-w-[60%]">
+                <CardTitle className="text-xl">
+                  {translatedRequest?.id === selectedRequest.id ? translatedRequest.title : selectedRequest.title}
+                </CardTitle>
+                {translatedRequest?.id === selectedRequest.id && translatedRequest.detectedLanguage && (
+                  <span className="text-xs text-muted-foreground mt-1">
+                    {language === "nl" ? "Origineel" : language === "de" ? "Original" : "Original"}: {translatedRequest.detectedLanguage}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <select 
+                  className="h-8 text-sm rounded-md border px-2 bg-background focus:outline-none"
+                  value={targetTranslationLang}
+                  onChange={(e) => setTargetTranslationLang(e.target.value as "nl" | "en" | "de")}
+                >
+                  <option value="en">English</option>
+                  <option value="nl">Nederlands</option>
+                  <option value="de">Deutsch</option>
+                </select>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleTranslate} 
+                  disabled={isTranslating}
+                  className="flex items-center gap-2 h-8"
+                >
+                  {isTranslating ? <Loader2 className="w-3 h-3 animate-spin" /> : "🌐"}
+                  {translatedRequest?.id === selectedRequest.id && translatedRequest.targetLanguage === targetTranslationLang
+                    ? (language === "nl" ? "Origineel" : "Original")
+                    : (language === "nl" ? "Vertaal Ticket" : language === "de" ? "Ticket übersetzen" : "Translate")}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>

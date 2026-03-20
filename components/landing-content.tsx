@@ -51,6 +51,27 @@ export function LandingContent() {
       step3Desc: "Accept, decline or return",
       footer: "FeatureHub © 2026",
     },
+    de: {
+      heroTitle1: "Optimieren Sie Ihre",
+      heroTitle2: "Funktionsanfragen",
+      heroSubtitle: "Eine kollaborative Plattform für Teams zum Einreichen, Überprüfen und Priorisieren von Funktionsanfragen mit einem strukturierten Workflow.",
+      getStarted: "Kostenlos starten",
+      login: "Anmelden",
+      feature1Title: "KI-gestützte Hilfe",
+      feature1Desc: "Erhalten Sie intelligente Vorschläge zum Schreiben überzeugender Anfragen mit klarer geschäftlicher Begründung.",
+      feature2Title: "Strukturierter Workflow",
+      feature2Desc: "Klarer Überprüfungsprozess von der Einreichung über den Support bis zur endgültigen Admin-Entscheidung.",
+      feature3Title: "Analyse-Dashboard",
+      feature3Desc: "Verfolgen Sie Anfragen nach Status, Priorität und Kategorie mit visuellen Analysen und Trends.",
+      workflowTitle: "Einfacher, linearer Workflow",
+      step1: "Einreichen",
+      step1Desc: "Anfragen mit KI erstellen",
+      step2: "Support",
+      step2Desc: "Details & Priorität",
+      step3: "Admin",
+      step3Desc: "Akzeptieren, ablehnen oder zurück",
+      footer: "FeatureHub © 2026",
+    },
   };
 
   const c = content[language];
@@ -71,11 +92,11 @@ export function LandingContent() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setLanguage(language === "nl" ? "en" : "nl")}
+              onClick={() => setLanguage(language === "nl" ? "en" : language === "en" ? "de" : "nl")}
               className="flex items-center gap-1"
             >
               <Globe className="w-4 h-4" />
-              {language === "nl" ? "🇬🇧 UK" : "🇳🇱 NL"}
+              {{ nl: "🇳🇱 NL", en: "🇬🇧 EN", de: "🇩🇪 DE" }[language as "nl"|"en"|"de"] || "🇳🇱 NL"}
             </Button>
             <Link href="/login">
               <Button variant="ghost">{c.login}</Button>

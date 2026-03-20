@@ -39,7 +39,7 @@ export function DashboardHeader({ user }: HeaderProps) {
   };
 
   const toggleLanguage = () => {
-    setLanguage(language === "nl" ? "en" : "nl");
+    setLanguage(language === "nl" ? "en" : language === "en" ? "de" : "nl");
   };
 
   const toggleSimulateUserRole = () => {
@@ -70,10 +70,10 @@ export function DashboardHeader({ user }: HeaderProps) {
             size="sm"
             onClick={toggleLanguage}
             className="flex items-center gap-2"
-            title={language === "nl" ? "Switch to English" : "Schakel naar Nederlands"}
+            title={language === "nl" ? "Switch to English" : language === "en" ? "Wechseln zu Deutsch" : "Schakel naar Nederlands"}
           >
             <Globe className="w-4 h-4" />
-            <span className="font-medium">{language === "nl" ? "🇬🇧 UK" : "🇳🇱 NL"}</span>
+            <span className="font-medium">{{ nl: "🇳🇱 NL", en: "🇬🇧 EN", de: "🇩🇪 DE" }[language as "nl"|"en"|"de"] || "🇳🇱 NL"}</span>
           </Button>
 
           <div className="flex items-center gap-2">
