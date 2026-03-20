@@ -1,0 +1,103 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  SUPPORT
+  ADMIN
+  VIEWER
+}
+
+enum RequestStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  FINAL_REVIEW
+  ACCEPTED
+  DECLINED
+  RETURNED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  requests      Request[] @relation("CreatedRequests")
+  reviewedAsSupport Request[] @relation("SupportReviews")
+  reviewedAsAdmin   Request[] @relation("AdminReviews")
+  notes         RequestNote[]
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  color       String    @default("#60B5FF")
+  createdAt   DateTime  @default(now())
+  requests    Request[]
+}
+
+model Request {
+  id                String        @id @default(cuid())
+  title             String
+  description       String        @db.Text
+  requestedBy       String?
+  businessJustification String?   @db.Text
+  reason            String?       @db.Text
+  status            RequestStatus @default(SUBMITTED)
+  priority          Priority?
+  finalPriority     Priority?
+  declineReason     String?       @db.Text
+  adminNotes        String?       @db.Text
+  supportNotes      String?       @db.Text
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  createdById       String
+  createdBy         User          @relation("CreatedRequests", fields: [createdById], references: [id])
+  categoryId        String?
+  category          Category?     @relation(fields: [categoryId], references: [id])
+  supportReviewerId String?
+  supportReviewer   User?         @relation("SupportReviews", fields: [supportReviewerId], references: [id])
+  adminReviewerId   String?
+  adminReviewer     User?         @relation("AdminReviews", fields: [adminReviewerId], references: [id])
+  attachments       Attachment[]
+  notes             RequestNote[]
+}
+
+model Attachment {
+  id              String   @id @default(cuid())
+  fileName        String
+  cloudStoragePath String
+  isPublic        Boolean  @default(false)
+  contentType     String
+  size            Int
+  createdAt       DateTime @default(now())
+  requestId       String
+  request         Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+}
+
+model RequestNote {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  requestId String
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+}

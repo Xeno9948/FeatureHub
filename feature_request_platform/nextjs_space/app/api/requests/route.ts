@@ -1,0 +1,215 @@
+export const dynamic = "force-dynamic";
+
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
+import { prisma } from "@/lib/db";
+import { RequestStatus, Role } from "@prisma/client";
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = session.user as any;
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status");
+    const categoryId = searchParams.get("categoryId");
+    const priority = searchParams.get("priority");
+
+    let where: any = {};
+
+    // Role-based filtering
+    if (user.role === Role.USER) {
+      where.createdById = user.id;
+    } else if (user.role === Role.SUPPORT) {
+      // Support sees SUBMITTED and RETURNED requests, plus requests they reviewed
+      where.OR = [
+        { status: RequestStatus.SUBMITTED },
+        { status: RequestStatus.RETURNED },
+        { supportReviewerId: user.id },
+      ];
+    }
+    // ADMIN and VIEWER see all
+
+    if (status) {
+      // Handle comma-separated status values
+      if (status.includes(",")) {
+        const statuses = status.split(",").map(s => s.trim());
+        where.status = { in: statuses };
+      } else {
+        where.status = status;
+      }
+    }
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+    if (priority) {
+      where.priority = priority;
+    }
+
+    const requests = await prisma.request.findMany({
+      where,
+      include: {
+        createdBy: {
+          select: { id: true, name: true, email: true },
+        },
+        category: {
+          select: { id: true, name: true, color: true },
+        },
+        attachments: true,
+        notes: {
+          include: {
+            user: {
+              select: { id: true, name: true, role: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json(requests);
+  } catch (error) {
+    console.error("Get requests error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = session.user as any;
+    const body = await request.json();
+    const { title, description, businessJustification, reason, categoryId, requestedBy, attachments } = body;
+
+    if (!title || !description) {
+      return NextResponse.json(
+        { error: "Title and description are required" },
+        { status: 400 }
+      );
+    }
+
+    // Get category name if categoryId is provided
+    let categoryName = null;
+    if (categoryId) {
+      const category = await prisma.category.findUnique({
+        where: { id: categoryId },
+        select: { name: true },
+      });
+      categoryName = category?.name;
+    }
+
+    const newRequest = await prisma.request.create({
+      data: {
+        title,
+        description,
+        businessJustification: businessJustification || null,
+        reason: reason || null,
+        categoryId: categoryId || null,
+        requestedBy: requestedBy || null,
+        createdById: user.id,
+        status: RequestStatus.SUBMITTED,
+        attachments: attachments?.length
+          ? {
+              create: attachments.map((att: any) => ({
+                fileName: att.fileName,
+                cloudStoragePath: att.cloudStoragePath,
+                isPublic: att.isPublic || false,
+                contentType: att.contentType,
+                size: att.size,
+              })),
+            }
+          : undefined,
+      },
+      include: {
+        createdBy: {
+          select: { id: true, name: true, email: true },
+        },
+        category: {
+          select: { id: true, name: true, color: true },
+        },
+        attachments: true,
+        notes: {
+          include: {
+            user: {
+              select: { id: true, name: true, role: true },
+            },
+          },
+        },
+      },
+    });
+
+    // Send email notification for new request
+    try {
+      const appUrl = process.env.NEXTAUTH_URL || '';
+      const appName = appUrl ? new URL(appUrl).hostname.split('.')[0] : 'FeatureHub';
+      
+      const htmlBody = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333; border-bottom: 2px solid #3B82F6; padding-bottom: 10px;">
+            📝 Nieuw Functieverzoek Ingediend
+          </h2>
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0; color: #1f2937;">${title}</h3>
+            ${categoryName ? `<p style="margin: 10px 0;"><strong>Categorie:</strong> ${categoryName}</p>` : ''}
+            ${requestedBy ? `<p style="margin: 10px 0;"><strong>Aangevraagd door:</strong> ${requestedBy}</p>` : ''}
+            <p style="margin: 10px 0;"><strong>Ingediend door:</strong> ${user.name || user.email}</p>
+            <p style="margin: 15px 0 5px 0;"><strong>Beschrijving:</strong></p>
+            <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #3B82F6;">
+              ${description.replace(/\n/g, '<br>')}
+            </div>
+            ${businessJustification ? `
+              <p style="margin: 15px 0 5px 0;"><strong>Zakelijke Onderbouwing:</strong></p>
+              <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #10B981;">
+                ${businessJustification.replace(/\n/g, '<br>')}
+              </div>
+            ` : ''}
+            ${attachments?.length ? `<p style="margin: 15px 0;"><strong>Bijlagen:</strong> ${attachments.length} bestand(en)</p>` : ''}
+          </div>
+          <p style="color: #666; font-size: 12px;">
+            Ingediend op: ${new Date().toLocaleString('nl-NL')}
+          </p>
+          ${appUrl ? `<p style="margin-top: 20px;"><a href="${appUrl}/dashboard/request/${newRequest.id}" style="background: #3B82F6; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">Bekijk Verzoek</a></p>` : ''}
+        </div>
+      `;
+
+      await fetch('https://apps.abacus.ai/api/sendNotificationEmail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deployment_token: process.env.ABACUSAI_API_KEY,
+          app_id: process.env.WEB_APP_ID,
+          notification_id: process.env.NOTIF_ID_NIEUW_FUNCTIEVERZOEK,
+          subject: `Nieuw Functieverzoek: ${title}`,
+          body: htmlBody,
+          is_html: true,
+          recipient_email: 'schouwman@ekomi-group.com',
+          sender_email: appUrl ? `noreply@${new URL(appUrl).hostname}` : undefined,
+          sender_alias: 'FeatureHub',
+        }),
+      });
+    } catch (emailError) {
+      console.error('Failed to send notification email:', emailError);
+      // Don't fail the request if email fails
+    }
+
+    return NextResponse.json(newRequest);
+  } catch (error) {
+    console.error("Create request error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
