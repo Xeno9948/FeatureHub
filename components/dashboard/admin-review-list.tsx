@@ -48,6 +48,7 @@ export function AdminReviewList() {
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
   const [declineReason, setDeclineReason] = useState("");
+  const [finalPriority, setFinalPriority] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -78,11 +79,18 @@ export function AdminReviewList() {
     setSubmitting(true);
 
     try {
+      const actionMap = {
+        ACCEPTED: "accept",
+        DECLINED: "decline",
+        RETURNED: "return_to_support"
+      };
+
       const res = await fetch(`/api/requests/${selectedRequest.id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          status: decision,
+          action: actionMap[decision],
+          finalPriority: finalPriority || null,
           adminNotes: adminNotes || null,
           declineReason: decision === "DECLINED" ? declineReason : null,
         }),
@@ -146,6 +154,7 @@ export function AdminReviewList() {
               setSelectedRequest(request);
               setAdminNotes("");
               setDeclineReason("");
+              setFinalPriority(request.priority || "");
             }}
           >
             <CardContent className="p-4">
@@ -207,6 +216,20 @@ export function AdminReviewList() {
               )}
 
               <div className="border-t pt-4">
+                <Label htmlFor="finalPriority">{language === "nl" ? "Definitieve Prioriteit" : "Final Priority"}</Label>
+                <select
+                  id="finalPriority"
+                  value={finalPriority}
+                  onChange={(e) => setFinalPriority(e.target.value)}
+                  className="w-full h-10 px-3 mt-2 mb-4 rounded-md border border-input bg-background text-sm"
+                >
+                  <option value="">{language === "nl" ? "Selecteer prioriteit..." : "Select priority..."}</option>
+                  <option value="LOW">{t.priority?.LOW || "Low"}</option>
+                  <option value="MEDIUM">{t.priority?.MEDIUM || "Medium"}</option>
+                  <option value="HIGH">{t.priority?.HIGH || "High"}</option>
+                  <option value="CRITICAL">{t.priority?.CRITICAL || "Critical"}</option>
+                </select>
+
                 <Label htmlFor="adminNotes">{t.review.adminNotes}</Label>
                 <Textarea
                   id="adminNotes"

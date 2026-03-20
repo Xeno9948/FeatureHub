@@ -77,10 +77,10 @@ export function SupportReviewList() {
 
     try {
       const res = await fetch(`/api/requests/${selectedRequest.id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          status: "UNDER_REVIEW",
+          action: "support_review",
           priority,
           supportNotes: supportNotes || null,
         }),
