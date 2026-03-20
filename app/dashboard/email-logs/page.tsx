@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/language-context";
-import { Loader2, Mail, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, Mail, CheckCircle, XCircle, Send } from "lucide-react";
+import { toast } from "sonner";
 
 interface EmailLog {
   id: string;
@@ -20,6 +22,7 @@ export default function EmailLogsPage() {
   const { language } = useLanguage();
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -38,13 +41,37 @@ export default function EmailLogsPage() {
     fetchLogs();
   }, []);
 
+  const handleTestEmail = async () => {
+    setTesting(true);
+    try {
+      const res = await fetch("/api/settings/test-email", { method: "POST" });
+      if (!res.ok) throw new Error("Test failed");
+      toast.success(language === "nl" ? "Test e-mail verzonden!" : "Test email sent!");
+      
+      const logsRes = await fetch("/api/email-logs");
+      if (logsRes.ok) {
+        setLogs(await logsRes.json());
+      }
+    } catch (e) {
+      toast.error(language === "nl" ? "Fout bij verzenden test" : "Error sending test email");
+    } finally {
+      setTesting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{language === "nl" ? "E-mail Logboeken" : "Email Logs"}</h1>
-        <p className="text-muted-foreground">
-          {language === "nl" ? "Bekijk alle verzonden e-mails vanuit het systeem." : "View all dispatched emails from the system."}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{language === "nl" ? "E-mail Logboeken" : "Email Logs"}</h1>
+          <p className="text-muted-foreground">
+            {language === "nl" ? "Bekijk alle verzonden e-mails vanuit het systeem." : "View all dispatched emails from the system."}
+          </p>
+        </div>
+        <Button onClick={handleTestEmail} disabled={testing} variant="outline" className="gap-2">
+          {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          {language === "nl" ? "Test E-mail" : "Test Email"}
+        </Button>
       </div>
 
       {loading ? (
