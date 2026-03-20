@@ -38,10 +38,11 @@ model User {
   image         String?
   password      String?
   role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  lastLogin     DateTime?
-  accounts      Account[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  lastLogin          DateTime?
+  emailNotifications Boolean   @default(true)
+  accounts           Account[]
   sessions      Session[]
   requests      Request[] @relation("CreatedRequests")
   reviewedAsSupport Request[] @relation("SupportReviews")
@@ -140,4 +141,14 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model EmailLog {
+  id              String   @id @default(cuid())
+  recipientEmail  String
+  subject         String
+  body            String   @db.Text
+  status          String
+  error           String?  @db.Text
+  createdAt       DateTime @default(now())
 }

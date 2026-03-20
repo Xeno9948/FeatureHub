@@ -30,7 +30,7 @@ interface Request {
   supportNotes: string | null;
   createdAt: string;
   requestedBy: string | null;
-  user: { name: string | null; email: string };
+  createdBy: { name: string | null; email: string };
   category: { name: string; color: string } | null;
 }
 
@@ -56,7 +56,7 @@ export function AdminReviewList() {
 
   const fetchRequests = async () => {
     try {
-      const res = await fetch("/api/requests?status=UNDER_REVIEW,FINAL_REVIEW");
+      const res = await fetch("/api/requests?status=SUBMITTED,UNDER_REVIEW,FINAL_REVIEW,RETURNED");
       if (res.ok) {
         const data = await res.json();
         setRequests(data);
@@ -165,7 +165,7 @@ export function AdminReviewList() {
                   <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <User className="w-3 h-3" />
-                      {request.user?.name || request.user?.email || (language === "nl" ? "Onbekend" : "Unknown")}
+                      {request.createdBy?.name || request.createdBy?.email || (language === "nl" ? "Onbekend" : "Unknown")}
                     </span>
                     {request.requestedBy && (
                       <span>• {t.common.requestedBy}: {request.requestedBy}</span>

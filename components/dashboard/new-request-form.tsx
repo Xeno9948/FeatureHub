@@ -261,6 +261,48 @@ export function NewRequestForm() {
     }
   };
 
+  const renderAiSuggestion = (field: string) => {
+    if (!showAiSuggestion || currentField !== field) return null;
+    return (
+      <Card className="border-purple-200 bg-purple-50 mt-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-purple-500" />
+            {t.ai.suggestionFor} {getFieldLabel(currentField || "")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-white rounded-lg p-4 text-sm whitespace-pre-wrap max-h-60 overflow-y-auto w-full">
+            {aiSuggestion || (
+              <span className="text-muted-foreground animate-pulse">{t.ai.generating}</span>
+            )}
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Button
+              type="button"
+              onClick={applyAiSuggestion}
+              disabled={!aiSuggestion || aiLoading !== null}
+              className="bg-purple-500 hover:bg-purple-600"
+            >
+              {t.ai.applySuggestion}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowAiSuggestion(false);
+                setAiSuggestion("");
+                setCurrentField(null);
+              }}
+            >
+              {t.ai.close}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card>
@@ -298,6 +340,7 @@ export function NewRequestForm() {
               placeholder={t.form.titlePlaceholder}
               required
             />
+            {renderAiSuggestion("title")}
           </div>
 
           {/* Description */}
@@ -328,6 +371,7 @@ export function NewRequestForm() {
               rows={5}
               required
             />
+            {renderAiSuggestion("description")}
           </div>
 
           {/* Business Justification */}
@@ -357,6 +401,7 @@ export function NewRequestForm() {
               placeholder={t.form.businessJustificationPlaceholder}
               rows={4}
             />
+            {renderAiSuggestion("businessJustification")}
           </div>
 
           {/* Reason */}
@@ -386,6 +431,7 @@ export function NewRequestForm() {
               placeholder={t.form.reasonPlaceholder}
               rows={3}
             />
+            {renderAiSuggestion("reason")}
           </div>
 
           {/* Category */}
@@ -470,46 +516,6 @@ export function NewRequestForm() {
           </div>
         </CardContent>
       </Card>
-
-      {/* AI Suggestion Panel */}
-      {showAiSuggestion && (
-        <Card className="border-purple-200 bg-purple-50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-500" />
-              {t.ai.suggestionFor} {getFieldLabel(currentField || "")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-white rounded-lg p-4 text-sm whitespace-pre-wrap max-h-60 overflow-y-auto">
-              {aiSuggestion || (
-                <span className="text-muted-foreground animate-pulse">{t.ai.generating}</span>
-              )}
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button
-                type="button"
-                onClick={applyAiSuggestion}
-                disabled={!aiSuggestion || aiLoading !== null}
-                className="bg-purple-500 hover:bg-purple-600"
-              >
-                {t.ai.applySuggestion}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setShowAiSuggestion(false);
-                  setAiSuggestion("");
-                  setCurrentField(null);
-                }}
-              >
-                {t.ai.close}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Submit Button */}
       <div className="flex justify-end gap-3">

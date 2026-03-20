@@ -22,7 +22,7 @@ interface SidebarProps {
 
 export function DashboardSidebar({ role }: SidebarProps) {
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const allLinks = [
     {
@@ -78,6 +78,18 @@ export function DashboardSidebar({ role }: SidebarProps) {
       label: t.sidebar.users,
       icon: Users,
       roles: ["ADMIN"],
+    },
+    {
+      href: "/dashboard/email-logs",
+      label: language === "nl" ? "E-mail Logboeken" : "Email Logs",
+      icon: ListTodo,
+      roles: ["ADMIN"],
+    },
+    {
+      href: "/dashboard/settings",
+      label: language === "nl" ? "Instellingen" : "Settings",
+      icon: Settings,
+      roles: ["USER", "SUPPORT", "ADMIN", "VIEWER"],
     },
     {
       href: "/dashboard/help",

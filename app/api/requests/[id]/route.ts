@@ -114,9 +114,9 @@ export async function PUT(
         supportNotes: supportNotes || existingRequest.supportNotes,
       };
     } else if (action === "accept" && user.role === Role.ADMIN) {
-      if (existingRequest.status !== RequestStatus.FINAL_REVIEW) {
+      if (existingRequest.status === RequestStatus.ACCEPTED || existingRequest.status === RequestStatus.DECLINED) {
         return NextResponse.json(
-          { error: "Request must be in final review to accept" },
+          { error: "Request is already processed" },
           { status: 400 }
         );
       }
@@ -127,9 +127,9 @@ export async function PUT(
         adminNotes: adminNotes || existingRequest.adminNotes,
       };
     } else if (action === "decline" && user.role === Role.ADMIN) {
-      if (existingRequest.status !== RequestStatus.FINAL_REVIEW) {
+      if (existingRequest.status === RequestStatus.ACCEPTED || existingRequest.status === RequestStatus.DECLINED) {
         return NextResponse.json(
-          { error: "Request must be in final review to decline" },
+          { error: "Request is already processed" },
           { status: 400 }
         );
       }
@@ -146,9 +146,9 @@ export async function PUT(
         adminNotes: adminNotes || existingRequest.adminNotes,
       };
     } else if (action === "return_to_support" && user.role === Role.ADMIN) {
-      if (existingRequest.status !== RequestStatus.FINAL_REVIEW) {
+      if (existingRequest.status === RequestStatus.ACCEPTED || existingRequest.status === RequestStatus.DECLINED) {
         return NextResponse.json(
-          { error: "Request must be in final review to return" },
+          { error: "Request is already processed" },
           { status: 400 }
         );
       }

@@ -42,7 +42,7 @@ interface Request {
   createdAt: string;
   updatedAt: string;
   requestedBy: string | null;
-  user: { name: string | null; email: string };
+  createdBy: { name: string | null; email: string };
   category: { name: string; color: string } | null;
   attachments: Attachment[];
 }
@@ -220,7 +220,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
               <div className="flex items-center gap-2 text-sm">
                 <User className="w-4 h-4 text-muted-foreground" />
                 <span className="text-muted-foreground">{t.common.submittedBy}:</span>
-                <span>{request.user?.name || request.user?.email || (language === "nl" ? "Onbekend" : "Unknown")}</span>
+                <span>{request.createdBy?.name || request.createdBy?.email || (language === "nl" ? "Onbekend" : "Unknown")}</span>
               </div>
               
               {request.requestedBy && (

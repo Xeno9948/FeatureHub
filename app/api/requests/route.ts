@@ -184,21 +184,51 @@ export async function POST(request: NextRequest) {
         </div>
       `;
 
-      await fetch('https://apps.abacus.ai/api/sendNotificationEmail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          deployment_token: process.env.ABACUSAI_API_KEY,
-          app_id: process.env.WEB_APP_ID,
-          notification_id: process.env.NOTIF_ID_NIEUW_FUNCTIEVERZOEK,
-          subject: `Nieuw Functieverzoek: ${title}`,
-          body: htmlBody,
-          is_html: true,
-          recipient_email: 'schouwman@ekomi-group.com',
-          sender_email: appUrl ? `noreply@${new URL(appUrl).hostname}` : undefined,
-          sender_alias: 'FeatureHub',
-        }),
+      const adminUsers = await prisma.user.findMany({
+        where: { role: 'ADMIN', emailNotifications: true },
+        select: { email: true },
       });
+
+      const recipientEmails = adminUsers.map((u) => u.email).filter(Boolean) as string[];
+
+      for (const recipient of recipientEmails) {
+        let status = 'SENT';
+        let errorMsg = null;
+        try {
+          const emailRes = await fetch('https://apps.abacus.ai/api/sendNotificationEmail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              deployment_token: process.env.ABACUSAI_API_KEY,
+              app_id: process.env.WEB_APP_ID,
+              notification_id: process.env.NOTIF_ID_NIEUW_FUNCTIEVERZOEK,
+              subject: `Nieuw Functieverzoek: ${title}`,
+              body: htmlBody,
+              is_html: true,
+              recipient_email: recipient,
+              sender_email: appUrl ? `noreply@${new URL(appUrl).hostname}` : undefined,
+              sender_alias: 'FeatureHub',
+            }),
+          });
+          if (!emailRes.ok) {
+            status = 'FAILED';
+            errorMsg = `HTTP ${emailRes.status}`;
+          }
+        } catch (e: any) {
+          status = 'FAILED';
+          errorMsg = e.message;
+        }
+
+        await prisma.emailLog.create({
+          data: {
+            recipientEmail: recipient,
+            subject: `Nieuw Functieverzoek: ${title}`,
+            body: htmlBody,
+            status,
+            error: errorMsg,
+          },
+        });
+      }
     } catch (emailError) {
       console.error('Failed to send notification email:', emailError);
       // Don't fail the request if email fails
