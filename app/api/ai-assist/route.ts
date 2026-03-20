@@ -21,11 +21,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let systemPrompt = `Je bent een behulpzame assistent die gebruikers helpt bij het schrijven van hoogwaardige functieverzoeken voor een bedrijfsapplicatie. Je antwoorden moeten professioneel, duidelijk en uitvoerbaar zijn. Antwoord altijd in het Nederlands.
+    let systemPrompt = `Je bent een assistent die gebruikers helpt bij het schrijven van functieverzoeken. 
+BELANGRIJKSTE REGEL: Gebruik GEEN formele, ingewikkelde zakelijke taal, passieve zinnen of "corporate jargon". Schrijf heel direct, menselijk, simpel, to-the-point en glashelder. Gebruik vlotte spreektaal (actief geschreven). Antwoord in het Nederlands.
     
-BELANGRIJK: Geef NOOIT de naam van het veld op. Geef geen introducties of voorvoegsels (zoals "Titel:", "Beschrijving:", etc.). Genereer EXCLUSIEF alleen de uiteindelijke onbewerkte tekstbestemming voor de specifieke textarea waarop de gebruiker zojuist heeft geklikt.
+BELANGRIJK: Geef NOOIT de naam van het veld op. Geef geen introducties of voorvoegsels (zoals "Titel:", "Beschrijving:", etc.). Genereer EXCLUSIEF alleen de uiteindelijke onbewerkte tekst.
 
-Je helpt momenteel uitsluitend bij het verbeteren van het "${field}" veld. Reageer alsof je de ruwe tekst bent die onzichtbaar in dat tekstvak wordt geplakt.`;
+Je helpt uitsluitend bij het "${field}" veld. Reageer alsof je de ruwe tekst bent die direct in dat tekstvak wordt geplakt.`;
 
     let userPrompt = "";
 
@@ -34,36 +35,33 @@ Je helpt momenteel uitsluitend bij het verbeteren van het "${field}" veld. Reage
         systemPrompt += `
 
 Voor beschrijvingen moet je:
-- Specifiek en gedetailleerd zijn over wat de functie moet doen
-- Relevante use cases opnemen
-- Verwacht gedrag beschrijven
-- Beknopt maar uitgebreid houden (2-4 paragrafen)`;
+- Super concreet zijn over wat het precies is en hoe het in de praktijk werkt
+- Geen abstracte woorden gebruiken (dus geen "synergetisch platform" maar gewoon "als je op deze knop klikt, gebeurt X")
+- Begrijpelijk schrijven alsof je het uitlegt aan een gewone collega (2-3 alinea's)`;
         userPrompt = currentValue
-          ? `Verbeter en breid deze functiebeschrijving uit:\n\n"${currentValue}"\n\n${context ? `Context: ${context}` : ""}`
-          : `Schrijf een duidelijke, gedetailleerde functiebeschrijving op basis van deze context:\n\n${context || "Een nieuwe functie voor het platform"}`;
+          ? `Herschrijf deze tekst zodat het directer en begrijpelijker is, zonder zakelijk jargon:\n\n"${currentValue}"\n\n${context ? `Context: ${context}` : ""}`
+          : `Schrijf een simpele, heldere beschrijving op basis van dit idee:\n\n${context || "Een nieuwe functie"}`;
         break;
 
       case "businessJustification":
         systemPrompt += `
 
 Voor zakelijke onderbouwing moet je:
-- De zakelijke waarde en ROI uitleggen
-- Voordelen waar mogelijk kwantificeren (tijdsbesparing, kostenreductie, omzetimpact)
-- Vermelden wie er baat bij heeft (teams, afdelingen, klanten)
-- Verbinden met bedrijfsdoelen of KPI's`;
+- De waarde heel simpel en direct uitleggen (schrijf bijvoorbeeld "het bespaart ons 2 uur per dag" in plaats van "het maximaliseert de operationele efficiëntie voor de afdeling")
+- Duidelijk maken wie er precies blij van wordt (onze klanten, dit team)
+- Absoluut geen dure managementtermen of bullshit-bingo gebruiken, hou het praktisch!`;
         userPrompt = currentValue
-          ? `Verbeter deze zakelijke onderbouwing om deze overtuigender te maken:\n\n"${currentValue}"\n\n${context ? `Extra context: ${context}` : ""}`
-          : `Schrijf een overtuigende zakelijke onderbouwing voor een functie met deze beschrijving:\n\n${context || "Een nieuwe functie"}`;
+          ? `Verbeter deze zakelijke onderbouwing om deze praktischer en directer te maken:\n\n"${currentValue}"\n\n${context ? `Extra context: ${context}` : ""}`
+          : `Waom is dit idee nuttig? Schrijf een simpele, overtuigende reden:\n\n${context || "Een nieuwe functie"}`;
         break;
 
       case "reason":
         systemPrompt += `
 
 Voor de redenering moet je:
-- Uitleggen waarom deze functie NU nodig is
-- De pijnpunten of problemen beschrijven die het oplost
-- Eventuele workarounds vermelden die momenteel worden gebruikt
-- Urgentie benadrukken indien van toepassing`;
+- In simpele, menselijke taal vertellen waarom we dit NU nodig hebben
+- Welk frustrerende probleem of welke pijnlijn het precies oplost
+- Vermijden van passieve, formele of wollige taal (dus geen "hiermee wordt getracht te realiseren dat...", maar gewoon "we willen dit omdat...")`;
         userPrompt = currentValue
           ? `Verbeter deze redenering om deze overtuigender te maken:\n\n"${currentValue}"\n\n${context ? `Extra context: ${context}` : ""}`
           : `Schrijf een duidelijke redenering waarom deze functie nodig is:\n\n${context || "Een nieuwe functie"}`;
