@@ -4,13 +4,17 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/db";
+import { NextRequest } from "next/server";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email || (session.user as any).role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const body = await request.json().catch(() => ({}));
+    const recipientEmail = body.email || session.user.email;
 
     const appUrl = process.env.NEXTAUTH_URL || "";
     
@@ -41,7 +45,7 @@ export async function POST() {
           subject: "FeatureHub: Test Email",
           body: htmlBody,
           is_html: true,
-          recipient_email: session.user.email,
+          recipient_email: recipientEmail,
           sender_email: appUrl ? `noreply@${new URL(appUrl).hostname}` : undefined,
           sender_alias: "FeatureHub (Test)",
         }),
@@ -59,7 +63,7 @@ export async function POST() {
     // Log the email
     await prisma.emailLog.create({
       data: {
-        recipientEmail: session.user.email,
+        recipientEmail: recipientEmail,
         subject: "FeatureHub: Test Email",
         body: htmlBody,
         status,

@@ -152,3 +152,10 @@ model EmailLog {
   error           String?  @db.Text
   createdAt       DateTime @default(now())
 }
+
+model SystemSetting {
+  id                 String   @id @default("global")
+  notificationEmails String   @default("schouwman@ekomi-group.com")
+  updatedAt          DateTime @updatedAt
+}
+

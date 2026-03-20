@@ -23,6 +23,7 @@ export default function EmailLogsPage() {
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [testing, setTesting] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -42,9 +43,17 @@ export default function EmailLogsPage() {
   }, []);
 
   const handleTestEmail = async () => {
+    if (!testEmail.trim() || !testEmail.includes("@")) {
+      toast.error(language === "nl" ? "Voer een geldig e-mailadres in" : "Enter a valid email address");
+      return;
+    }
     setTesting(true);
     try {
-      const res = await fetch("/api/settings/test-email", { method: "POST" });
+      const res = await fetch("/api/settings/test-email", { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: testEmail })
+      });
       if (!res.ok) throw new Error("Test failed");
       toast.success(language === "nl" ? "Test e-mail verzonden!" : "Test email sent!");
       
@@ -68,10 +77,19 @@ export default function EmailLogsPage() {
             {language === "nl" ? "Bekijk alle verzonden e-mails vanuit het systeem." : "View all dispatched emails from the system."}
           </p>
         </div>
-        <Button onClick={handleTestEmail} disabled={testing} variant="outline" className="gap-2">
-          {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-          {language === "nl" ? "Test E-mail" : "Test Email"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <input
+            type="email"
+            placeholder={language === "nl" ? "E-mailadres ontvanger" : "Recipient email"}
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            className="h-10 px-3 rounded-md border border-input bg-background text-sm min-w-[200px]"
+          />
+          <Button onClick={handleTestEmail} disabled={testing || !testEmail} variant="outline" className="gap-2">
+            {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            {language === "nl" ? "Test E-mail" : "Test Email"}
+          </Button>
+        </div>
       </div>
 
       {loading ? (

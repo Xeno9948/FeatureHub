@@ -184,12 +184,9 @@ export async function POST(request: NextRequest) {
         </div>
       `;
 
-      const adminUsers = await prisma.user.findMany({
-        where: { role: 'ADMIN', emailNotifications: true },
-        select: { email: true },
-      });
-
-      const recipientEmails = adminUsers.map((u) => u.email).filter(Boolean) as string[];
+      const systemSetting = await prisma.systemSetting.findUnique({ where: { id: "global" } });
+      const defaultEmails = systemSetting ? systemSetting.notificationEmails : "schouwman@ekomi-group.com";
+      const recipientEmails = defaultEmails.split(",").map((e: string) => e.trim()).filter((e: string) => e);
 
       for (const recipient of recipientEmails) {
         let status = 'SENT';
