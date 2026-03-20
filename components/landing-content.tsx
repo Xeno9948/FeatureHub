@@ -96,7 +96,12 @@ export function LandingContent() {
               className="flex items-center gap-1"
             >
               <Globe className="w-4 h-4" />
-              {{ nl: "🇳🇱 NL", en: "🇬🇧 EN", de: "🇩🇪 DE" }[language as "nl"|"en"|"de"] || "🇳🇱 NL"}
+              <span className="hidden xs:inline">
+                {{ nl: "🇳🇱 NL", en: "🇬🇧 EN", de: "🇩🇪 DE" }[language as "nl"|"en"|"de"] || "🇳🇱 NL"}
+              </span>
+              <span className="xs:hidden">
+                {{ nl: "NL", en: "EN", de: "DE" }[language as "nl"|"en"|"de"] || "NL"}
+              </span>
             </Button>
             <Link href="/login">
               <Button variant="ghost">{c.login}</Button>
@@ -111,10 +116,10 @@ export function LandingContent() {
       {/* Hero Section */}
       <main className="max-w-6xl mx-auto px-4 py-20">
         <div className="text-center space-y-6">
-          <h1 className="text-5xl font-bold text-gray-900 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
             {c.heroTitle1} <span className="text-blue-500">{c.heroTitle2}</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
             {c.heroSubtitle}
           </p>
           <div className="flex gap-4 justify-center pt-4">

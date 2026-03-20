@@ -285,7 +285,7 @@ export function AdminReviewList() {
       {/* Decision Panel */}
       <div>
         {selectedRequest ? (
-          <Card className="sticky top-6">
+          <Card className="md:sticky md:top-6">
             <CardHeader className="flex flex-row items-start justify-between pb-2">
               <div className="flex flex-col gap-1 max-w-[60%]">
                 <CardTitle className="text-xl">

@@ -3,11 +3,13 @@
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, User, Globe } from "lucide-react";
+import { LogOut, User, Globe, Menu } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
+import { SidebarLinks } from "./sidebar";
 
 interface HeaderProps {
   user: {
@@ -56,11 +58,37 @@ export function DashboardHeader({ user }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
-        <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+        <div className="flex items-center gap-2 md:gap-3">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="w-6 h-6" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-72">
+              <SheetHeader className="p-4 border-b">
+                <SheetTitle className="flex items-center gap-3">
+                  <div className="relative w-8 h-8 rounded-lg overflow-hidden">
+                    <Image src="/logo.jpg" alt="Logo" fill className="object-contain" />
+                  </div>
+                  <span>FeatureHub</span>
+                </SheetTitle>
+              </SheetHeader>
+              <div className="p-4">
+                <SheetClose asChild>
+                  <div>
+                    <SidebarLinks role={(user?.role === "ADMIN" && isSimulatingUser) ? "USER" : user?.role} />
+                  </div>
+                </SheetClose>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-lg overflow-hidden flex-shrink-0">
             <Image src="/logo.jpg" alt="Klantenvertellen logo" fill className="object-contain" />
           </div>
-          <span className="font-semibold text-lg hidden sm:block text-gray-800">{t.appName}</span>
+          <span className="font-semibold text-lg hidden xs:block sm:block text-gray-800">{t.appName}</span>
         </div>
 
         <div className="flex items-center gap-4">

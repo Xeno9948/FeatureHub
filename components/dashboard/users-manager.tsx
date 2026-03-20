@@ -336,31 +336,31 @@ export function UsersManager() {
           {users.map((user) => (
             <Card key={user.id}>
               <CardContent className="p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-muted flex-shrink-0 flex items-center justify-center">
                       <User className="w-5 h-5 text-muted-foreground" />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{user.name || user.email}</span>
-                        <Badge className={roleColors[user.role] || roleColors.USER}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium truncate max-w-[150px] sm:max-w-none">{user.name || user.email}</span>
+                        <Badge className={`${roleColors[user.role] || roleColors.USER} whitespace-nowrap`}>
                           {roles[user.role] || user.role}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mt-1">
                         <span className="flex items-center gap-1">
                           <Mail className="w-3 h-3" />
-                          {user.email}
+                          <span className="truncate max-w-[180px] sm:max-w-none">{user.email}</span>
                         </span>
                         <span>
                           {user._count.requests} {txt.requests}
                         </span>
-                        <span>
+                        <span className="hidden xs:inline">
                           {txt.created}: {new Date(user.createdAt).toLocaleDateString(language === "nl" ? "nl-NL" : "en-GB")}
                         </span>
                         {user.lastLogin && (
-                          <span>
+                          <span className="hidden sm:inline">
                             • {txt.lastLogin}: {new Date(user.lastLogin).toLocaleDateString(language === "nl" ? "nl-NL" : "en-GB")}
                           </span>
                         )}

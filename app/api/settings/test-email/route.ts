@@ -15,7 +15,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const recipientEmail = body.email || session.user.email;
+    const recipientEmail = body.email || session?.user?.email;
+
+    if (!recipientEmail) {
+      return NextResponse.json({ error: "No recipient email provided" }, { status: 400 });
+    }
 
     const appUrl = process.env.NEXTAUTH_URL || "";
     

@@ -18,9 +18,10 @@ import {
 
 interface SidebarProps {
   role?: string;
+  onItemClick?: () => void;
 }
 
-export function DashboardSidebar({ role }: SidebarProps) {
+export function SidebarLinks({ role, onItemClick }: SidebarProps) {
   const pathname = usePathname();
   const { t, language } = useLanguage();
 
@@ -102,29 +103,38 @@ export function DashboardSidebar({ role }: SidebarProps) {
   const links = allLinks.filter((link) => link.roles.includes(role || "USER"));
 
   return (
-    <aside className="fixed left-0 top-16 w-64 h-[calc(100vh-4rem)] bg-white border-r hidden md:block overflow-y-auto">
-      <nav className="p-4 space-y-2">
-        {links.map((link) => {
-          const Icon = link.icon;
-          const isActive = pathname === link.href;
+    <nav className="space-y-2">
+      {links.map((link) => {
+        const Icon = link.icon;
+        const isActive = pathname === link.href;
 
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
-                isActive
-                  ? "bg-orange-50 text-orange-600 font-medium"
-                  : "text-gray-600 hover:bg-orange-50/50"
-              )}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{link.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={onItemClick}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+              isActive
+                ? "bg-orange-50 text-orange-600 font-medium"
+                : "text-gray-600 hover:bg-orange-50/50"
+            )}
+          >
+            <Icon className="w-5 h-5" />
+            <span>{link.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+export function DashboardSidebar({ role }: SidebarProps) {
+  return (
+    <aside className="fixed left-0 top-16 w-64 h-[calc(100vh-4rem)] bg-white border-r hidden md:block overflow-y-auto">
+      <div className="p-4">
+        <SidebarLinks role={role} />
+      </div>
     </aside>
   );
 }

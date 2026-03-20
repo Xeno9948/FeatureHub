@@ -145,7 +145,7 @@ export function DashboardContent({ role, userId }: DashboardContentProps) {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -216,7 +216,7 @@ export function DashboardContent({ role, userId }: DashboardContentProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {getQuickActions().map((action) => {
               const Icon = action.icon;
               return (
