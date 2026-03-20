@@ -17,6 +17,7 @@ import {
   Loader2,
   User,
   CheckCircle,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -67,9 +68,14 @@ export function SupportReviewList() {
     }
   };
 
-  const handleSubmitReview = async () => {
-    if (!selectedRequest || !priority) {
+  const handleSubmitReview = async (action: "support_review" | "return_to_submitter") => {
+    if (!selectedRequest) return;
+    if (action === "support_review" && !priority) {
       toast.error(t.review.selectPriority);
+      return;
+    }
+    if (action === "return_to_submitter" && !supportNotes.trim()) {
+      toast.error(language === "nl" ? "Korte uitleg vereist in Notities-veld" : "Brief explanation required in Notes field");
       return;
     }
 
@@ -80,15 +86,18 @@ export function SupportReviewList() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "support_review",
-          priority,
+          action: action,
+          priority: action === "support_review" ? priority : undefined,
           supportNotes: supportNotes || null,
         }),
       });
 
       if (!res.ok) throw new Error("Error updating request");
 
-      toast.success(language === "nl" ? "Verzoek doorgestuurd naar admin" : "Request forwarded to admin");
+      toast.success(action === "support_review" 
+        ? (language === "nl" ? "Verzoek doorgestuurd naar admin" : "Request forwarded to admin") 
+        : (language === "nl" ? "Teruggestuurd naar indiener" : "Returned to submitter"));
+        
       setSelectedRequest(null);
       setPriority("");
       setSupportNotes("");
@@ -219,18 +228,34 @@ export function SupportReviewList() {
                 />
               </div>
 
-              <Button
-                onClick={handleSubmitReview}
-                disabled={submitting || !priority}
-                className="w-full"
-              >
-                {submitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : (
-                  <Send className="w-4 h-4 mr-2" />
-                )}
-                {t.review.submitToAdmin}
-              </Button>
+              <div className="flex flex-col gap-2 pt-2">
+                <Button
+                  onClick={() => handleSubmitReview("support_review")}
+                  disabled={submitting || !priority}
+                  className="w-full"
+                >
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Send className="w-4 h-4 mr-2" />
+                  )}
+                  {t.review.submitToAdmin}
+                </Button>
+                <Button
+                  onClick={() => handleSubmitReview("return_to_submitter")}
+                  disabled={submitting || !supportNotes.trim()}
+                  variant="outline"
+                  className="text-orange-600 border-orange-200 hover:bg-orange-50 w-full"
+                  title={language === "nl" ? "Verwacht Notities" : "Requires Note"}
+                >
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                  )}
+                  {language === "nl" ? "Terug naar Indiener" : "Return to User"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : (

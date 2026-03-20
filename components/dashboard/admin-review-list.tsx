@@ -69,7 +69,7 @@ export function AdminReviewList() {
     }
   };
 
-  const handleDecision = async (decision: "ACCEPTED" | "DECLINED" | "RETURNED") => {
+  const handleDecision = async (decision: "ACCEPTED" | "DECLINED" | "RETURNED" | "SUBMITTED") => {
     if (!selectedRequest) return;
     if (decision === "DECLINED" && !declineReason.trim()) {
       toast.error(language === "nl" ? "Geef een reden voor afwijzing" : "Please provide a reason for declining");
@@ -82,7 +82,8 @@ export function AdminReviewList() {
       const actionMap = {
         ACCEPTED: "accept",
         DECLINED: "decline",
-        RETURNED: "return_to_support"
+        RETURNED: "return_to_support",
+        SUBMITTED: "return_to_submitter"
       };
 
       const res = await fetch(`/api/requests/${selectedRequest.id}`, {
@@ -102,6 +103,7 @@ export function AdminReviewList() {
         ACCEPTED: t.review.accepted,
         DECLINED: t.review.declined,
         RETURNED: t.review.returnedToSupport,
+        SUBMITTED: language === "nl" ? "Teruggestuurd naar indiener" : "Returned to Submitter",
       };
       toast.success(messages[decision]);
       setSelectedRequest(null);
@@ -289,6 +291,20 @@ export function AdminReviewList() {
                     <RotateCcw className="w-4 h-4 mr-2" />
                   )}
                   {t.review.returnToSupport}
+                </Button>
+                <Button
+                  onClick={() => handleDecision("SUBMITTED")}
+                  disabled={submitting || !adminNotes.trim()}
+                  variant="outline"
+                  className="mt-2 text-orange-600 border-orange-200 hover:bg-orange-50"
+                  title={language === "nl" ? "Verwacht Notities" : "Requires Note"}
+                >
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                  )}
+                  {language === "nl" ? "Terug naar Indiener" : "Return to User"}
                 </Button>
               </div>
             </CardContent>

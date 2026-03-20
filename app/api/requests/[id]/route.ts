@@ -156,6 +156,20 @@ export async function PUT(
         status: RequestStatus.RETURNED,
         adminNotes: adminNotes || existingRequest.adminNotes,
       };
+    } else if (action === "return_to_submitter" && (user.role === Role.ADMIN || user.role === Role.SUPPORT)) {
+      if (existingRequest.status === RequestStatus.ACCEPTED || existingRequest.status === RequestStatus.DECLINED) {
+        return NextResponse.json(
+          { error: "Request is already processed" },
+          { status: 400 }
+        );
+      }
+      const isSupport = user.role === Role.SUPPORT;
+      updateData = {
+        status: RequestStatus.SUBMITTED,
+        ...(isSupport 
+          ? { supportNotes: supportNotes || existingRequest.supportNotes } 
+          : { adminNotes: adminNotes || existingRequest.adminNotes }),
+      };
     } else if (user.role === Role.USER && existingRequest.createdById === user.id) {
       // Users can only update their own requests that are still submitted
       if (existingRequest.status !== RequestStatus.SUBMITTED) {
