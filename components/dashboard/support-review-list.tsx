@@ -53,6 +53,8 @@ export function SupportReviewList() {
   const [priority, setPriority] = useState("");
   const [supportNotes, setSupportNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [translatedRequest, setTranslatedRequest] = useState<any>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   useEffect(() => {
     fetchRequests();
@@ -87,6 +89,46 @@ export function SupportReviewList() {
       window.open(url, "_blank");
     } catch (error) {
       toast.error(language === "nl" ? "Fout bij openen bestand" : "Error opening file");
+    }
+  };
+
+  const handleTranslate = async () => {
+    if (!selectedRequest) return;
+    
+    if (translatedRequest?.id === selectedRequest.id) {
+      setTranslatedRequest(null);
+      return;
+    }
+
+    setIsTranslating(true);
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetLanguage: language,
+          textObjects: {
+            title: selectedRequest.title,
+            description: selectedRequest.description,
+            businessJustification: selectedRequest.businessJustification || "",
+            reason: selectedRequest.reason || ""
+          }
+        }),
+      });
+
+      if (!res.ok) throw new Error("Translation failed");
+      
+      const textObjects = await res.json();
+      setTranslatedRequest({
+        id: selectedRequest.id,
+        ...textObjects
+      });
+      toast.success(language === "nl" ? "Vertaald!" : "Translated!");
+    } catch (error) {
+      console.error(error);
+      toast.error(language === "nl" ? "Fout bij vertalen" : "Error translating");
+    } finally {
+      setIsTranslating(false);
     }
   };
 
@@ -200,26 +242,40 @@ export function SupportReviewList() {
       <div>
         {selectedRequest ? (
           <Card className="sticky top-6">
-            <CardHeader>
-              <CardTitle>{selectedRequest.title}</CardTitle>
+            <CardHeader className="flex flex-row items-start justify-between pb-2">
+              <CardTitle className="text-xl max-w-[70%]">
+                {translatedRequest?.id === selectedRequest.id ? translatedRequest.title : selectedRequest.title}
+              </CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleTranslate} 
+                disabled={isTranslating}
+                className="flex items-center gap-2 h-8"
+              >
+                {isTranslating ? <Loader2 className="w-3 h-3 animate-spin" /> : "🌐"}
+                {translatedRequest?.id === selectedRequest.id 
+                  ? (language === "nl" ? "Origineel" : "Original")
+                  : (language === "nl" ? "Vertaal Ticket" : "Translate")}
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <Label className="text-muted-foreground">{t.form.description}</Label>
-                <p className="text-sm mt-1">{selectedRequest.description}</p>
+                <p className="text-sm mt-1">{translatedRequest?.id === selectedRequest.id ? translatedRequest.description : selectedRequest.description}</p>
               </div>
 
               {selectedRequest.businessJustification && (
                 <div>
                   <Label className="text-muted-foreground">{t.form.businessJustification}</Label>
-                  <p className="text-sm mt-1 whitespace-pre-wrap">{selectedRequest.businessJustification}</p>
+                  <p className="text-sm mt-1 whitespace-pre-wrap">{translatedRequest?.id === selectedRequest.id ? translatedRequest.businessJustification : selectedRequest.businessJustification}</p>
                 </div>
               )}
 
               {selectedRequest.reason && (
                 <div>
                   <Label className="text-muted-foreground">{t.form.reason}</Label>
-                  <p className="text-sm mt-1 whitespace-pre-wrap">{selectedRequest.reason}</p>
+                  <p className="text-sm mt-1 whitespace-pre-wrap">{translatedRequest?.id === selectedRequest.id ? translatedRequest.reason : selectedRequest.reason}</p>
                 </div>
               )}
 
