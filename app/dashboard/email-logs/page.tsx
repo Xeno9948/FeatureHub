@@ -54,16 +54,18 @@ export default function EmailLogsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: testEmail })
       });
-      if (!res.ok) throw new Error("Test failed");
-      toast.success(language === "nl" ? "Test e-mail verzonden!" : "Test email sent!");
-      
+      if (!res.ok) {
+        toast.error(language === "nl" ? "Verzenden geweigerd. Controleer de API Log!" : "Transmission rejected. Review the API Log!");
+      } else {
+        toast.success(language === "nl" ? "Test e-mail verzonden!" : "Test email sent!");
+      }
+    } catch (e) {
+      toast.error(language === "nl" ? "Fout bij de netwerkverbinding" : "Network connection error");
+    } finally {
       const logsRes = await fetch("/api/email-logs");
       if (logsRes.ok) {
         setLogs(await logsRes.json());
       }
-    } catch (e) {
-      toast.error(language === "nl" ? "Fout bij verzenden test" : "Error sending test email");
-    } finally {
       setTesting(false);
     }
   };
