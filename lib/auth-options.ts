@@ -66,4 +66,5 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
   },
+  secret: process.env.NEXTAUTH_SECRET || "featurehub_default_secret_key_2026",
 };
