@@ -27,6 +27,8 @@ interface Request {
   id: string;
   title: string;
   description: string;
+  businessJustification: string | null;
+  reason: string | null;
   status: string;
   createdAt: string;
   requestedBy: string | null;
@@ -206,6 +208,20 @@ export function SupportReviewList() {
                 <Label className="text-muted-foreground">{t.form.description}</Label>
                 <p className="text-sm mt-1">{selectedRequest.description}</p>
               </div>
+
+              {selectedRequest.businessJustification && (
+                <div>
+                  <Label className="text-muted-foreground">{t.form.businessJustification}</Label>
+                  <p className="text-sm mt-1 whitespace-pre-wrap">{selectedRequest.businessJustification}</p>
+                </div>
+              )}
+
+              {selectedRequest.reason && (
+                <div>
+                  <Label className="text-muted-foreground">{t.form.reason}</Label>
+                  <p className="text-sm mt-1 whitespace-pre-wrap">{selectedRequest.reason}</p>
+                </div>
+              )}
 
               {selectedRequest.category && (
                 <div>

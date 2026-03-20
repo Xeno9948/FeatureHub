@@ -249,7 +249,14 @@ export function AdminReviewList() {
               {selectedRequest.businessJustification && (
                 <div>
                   <Label className="text-muted-foreground">{t.form.businessJustification}</Label>
-                  <p className="text-sm mt-1">{selectedRequest.businessJustification}</p>
+                  <p className="text-sm mt-1 whitespace-pre-wrap">{selectedRequest.businessJustification}</p>
+                </div>
+              )}
+
+              {selectedRequest.reason && (
+                <div>
+                  <Label className="text-muted-foreground">{t.form.reason}</Label>
+                  <p className="text-sm mt-1 whitespace-pre-wrap">{selectedRequest.reason}</p>
                 </div>
               )}
 
