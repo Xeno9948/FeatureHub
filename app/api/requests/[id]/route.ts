@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/db";
 import { RequestStatus, Role, Priority } from "@prisma/client";
+import { sendEmail } from "@/lib/email";
 
 export async function GET(
   request: NextRequest,
@@ -213,6 +214,49 @@ export async function PUT(
         },
       },
     });
+
+    if (action === "return_to_submitter" && updatedRequest.createdBy?.email) {
+      const appUrl = process.env.NEXTAUTH_URL || "";
+      const notes = user.role === Role.SUPPORT ? supportNotes : adminNotes;
+      const htmlBody = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; border: 1px solid #e5e7eb; padding: 30px;">
+          <div style="text-align: center; padding-bottom: 20px;">
+            ${appUrl ? `<img src="${appUrl}/logo.jpg" alt="Klantenvertellen" style="max-height: 45px; margin: 0 auto;" />` : `<h2 style="color: #ea580c; margin: 0;">Klantenvertellen</h2>`}
+          </div>
+          <h2 style="color: #333; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-top: 0;">
+            ⚠️ Verzoek Teruggestuurd
+          </h2>
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="color: #1f2937;">Hallo ${updatedRequest.createdBy.name || 'Gebruiker'},</p>
+            <p style="color: #1f2937;">Je functieverzoek <strong>"${updatedRequest.title}"</strong> is teruggestuurd omdat we extra informatie nodig hebben.</p>
+            <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #ea580c; margin-top: 15px;">
+              <strong>Notitie van beheerder:</strong><br/>
+              ${(notes || "").replace(/\n/g, '<br>')}
+            </div>
+          </div>
+          ${appUrl ? `<p style="margin-top: 20px; text-align: center;"><a href="${appUrl}/dashboard/request/${updatedRequest.id}" style="background: #ea580c; color: #ffffff !important; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: bold;">Verzoek Bewerken</a></p>` : ''}
+        </div>
+      `;
+
+      try {
+        await sendEmail({
+          to: updatedRequest.createdBy.email,
+          subject: `Actie vereist: Functieverzoek "${updatedRequest.title}"`,
+          htmlBody: htmlBody,
+        });
+
+        await prisma.emailLog.create({
+          data: {
+            recipientEmail: updatedRequest.createdBy.email,
+            subject: `Actie vereist: Functieverzoek "${updatedRequest.title}"`,
+            body: htmlBody,
+            status: "SENT",
+          },
+        });
+      } catch (err: any) {
+        console.error("Failed to send return email:", err);
+      }
+    }
 
     return NextResponse.json(updatedRequest);
   } catch (error) {
