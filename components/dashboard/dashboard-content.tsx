@@ -103,6 +103,8 @@ export function DashboardContent({ role, userId }: DashboardContentProps) {
         ];
       case "SUPPORT":
         return [
+          { href: "/dashboard/new-request", label: t.sidebar.newRequest, icon: Lightbulb },
+          { href: "/dashboard/my-requests", label: t.sidebar.myRequests, icon: FileText },
           { href: "/dashboard/review", label: t.sidebar.reviewQueue, icon: Clock },
           { href: "/dashboard/all-requests", label: t.sidebar.allRequests, icon: FileText },
           { href: "/dashboard/analytics", label: language === "nl" ? "Analyse Bekijken" : "View Analytics", icon: TrendingUp },

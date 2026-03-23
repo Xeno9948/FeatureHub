@@ -192,6 +192,18 @@ export async function POST(request: NextRequest) {
       const defaultEmails = systemSetting ? systemSetting.notificationEmails : "schouwman@ekomi-group.com";
       const recipientEmails = defaultEmails.split(",").map((e: string) => e.trim()).filter((e: string) => e);
 
+      // Also notify all users with SUPPORT role
+      const supportUsers = await prisma.user.findMany({
+        where: { role: Role.SUPPORT, emailNotifications: true },
+        select: { email: true }
+      });
+      
+      for (const u of supportUsers) {
+        if (u.email && !recipientEmails.includes(u.email)) {
+          recipientEmails.push(u.email);
+        }
+      }
+
       for (const recipient of recipientEmails) {
         let status = 'SENT';
         let errorMsg = null;

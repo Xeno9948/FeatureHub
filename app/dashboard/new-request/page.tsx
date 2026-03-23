@@ -7,7 +7,7 @@ export default async function NewRequestPage() {
   const session = await getServerSession(authOptions);
   const user = session?.user as any;
 
-  if (user?.role !== "USER") {
+  if (user?.role !== "USER" && user?.role !== "SUPPORT") {
     redirect("/dashboard");
   }
 

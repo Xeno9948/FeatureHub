@@ -36,13 +36,13 @@ export function SidebarLinks({ role, onItemClick }: SidebarProps) {
       href: "/dashboard/new-request",
       label: t.sidebar.newRequest,
       icon: PlusCircle,
-      roles: ["USER"],
+      roles: ["USER", "SUPPORT"],
     },
     {
       href: "/dashboard/my-requests",
       label: t.sidebar.myRequests,
       icon: ListTodo,
-      roles: ["USER"],
+      roles: ["USER", "SUPPORT"],
     },
     {
       href: "/dashboard/review",

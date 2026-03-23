@@ -258,6 +258,60 @@ export async function PUT(
       }
     }
 
+    if (action === "return_to_support") {
+      // Notify all users with SUPPORT role
+      const supportUsers = await prisma.user.findMany({
+        where: { role: Role.SUPPORT, emailNotifications: true },
+        select: { email: true, name: true }
+      });
+
+      if (supportUsers.length > 0) {
+        const appUrl = process.env.NEXTAUTH_URL || "";
+        const htmlBody = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; border: 1px solid #e5e7eb; padding: 30px;">
+            <div style="text-align: center; padding-bottom: 20px;">
+              ${appUrl ? `<img src="${appUrl}/logo.jpg" alt="Klantenvertellen" style="max-height: 45px; margin: 0 auto;" />` : `<h2 style="color: #ea580c; margin: 0;">Klantenvertellen</h2>`}
+            </div>
+            <h2 style="color: #333; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-top: 0;">
+              🔄 Verzoek Teruggestuurd naar Support
+            </h2>
+            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="color: #1f2937;">Een functieverzoek is teruggestuurd door de admin voor aanvullende support review.</p>
+              <h3 style="margin: 15px 0 5px 0; color: #1f2937;">${updatedRequest.title}</h3>
+              <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #ea580c; margin-top: 15px;">
+                <strong>Notitie van admin:</strong><br/>
+                ${(adminNotes || "").replace(/\n/g, '<br>')}
+              </div>
+            </div>
+            ${appUrl ? `<p style="margin-top: 20px; text-align: center;"><a href="${appUrl}/dashboard/request/${updatedRequest.id}" style="background: #ea580c; color: #ffffff !important; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: bold;">Bekijk Verzoek</a></p>` : ''}
+          </div>
+        `;
+
+        for (const u of supportUsers) {
+          if (u.email) {
+            try {
+              await sendEmail({
+                to: u.email,
+                subject: `Actie vereist: Functieverzoek "${updatedRequest.title}" terug naar Support`,
+                htmlBody: htmlBody,
+              });
+
+              await prisma.emailLog.create({
+                data: {
+                  recipientEmail: u.email,
+                  subject: `Actie vereist: Functieverzoek "${updatedRequest.title}" terug naar Support`,
+                  body: htmlBody,
+                  status: "SENT",
+                },
+              });
+            } catch (err: any) {
+              console.error("Failed to send return-to-support email:", err);
+            }
+          }
+        }
+      }
+    }
+
     return NextResponse.json(updatedRequest);
   } catch (error) {
     console.error("Update request error:", error);
