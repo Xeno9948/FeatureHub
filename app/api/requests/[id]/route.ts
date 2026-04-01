@@ -171,8 +171,9 @@ export async function PUT(
           ? { supportNotes: supportNotes || existingRequest.supportNotes } 
           : { adminNotes: adminNotes || existingRequest.adminNotes }),
       };
-    } else if (user.role === Role.USER && existingRequest.createdById === user.id) {
-      // Users can only update their own requests that are SUBMITTED or RETURNED
+    } else if (!action && existingRequest.createdById === user.id) {
+      // Any role can edit their own requests when no workflow action is specified
+
       if (
         existingRequest.status !== RequestStatus.SUBMITTED &&
         existingRequest.status !== RequestStatus.RETURNED
