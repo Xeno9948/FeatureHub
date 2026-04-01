@@ -48,6 +48,7 @@ model User {
   reviewedAsSupport Request[] @relation("SupportReviews")
   reviewedAsAdmin   Request[] @relation("AdminReviews")
   notes         RequestNote[]
+  activities        ActivityLog[]
 }
 
 model Category {
@@ -84,6 +85,18 @@ model Request {
   adminReviewer     User?         @relation("AdminReviews", fields: [adminReviewerId], references: [id])
   attachments       Attachment[]
   notes             RequestNote[]
+  activities        ActivityLog[]
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String   // e.g., "UPDATED", "STATUS_CHANGED", "NOTE_ADDED"
+  details   String?  @db.Text // JSON string: { "before": {...}, "after": {...} }
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  requestId String
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
 }
 
 model Attachment {

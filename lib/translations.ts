@@ -65,6 +65,10 @@ export const translations = {
       allStatuses: "Alle Statussen",
       allPriorities: "Alle Prioriteiten",
       returnedNote: "Dit verzoek is teruggestuurd. Bekijk de notitie hieronder en pas uw verzoek aan.",
+      history: "Geschiedenis",
+      activity: "Activiteit",
+      noActivity: "Nog geen activiteit geregistreerd",
+      viewHistory: "Bekijk Geschiedenis",
     },
     
     // Forms
@@ -302,6 +306,10 @@ export const translations = {
       allStatuses: "All Statuses",
       allPriorities: "All Priorities",
       returnedNote: "This request has been returned. Please review the note below and update your request.",
+      history: "History",
+      activity: "Activity",
+      noActivity: "No activity recorded yet",
+      viewHistory: "View History",
     },
     
     // Forms
@@ -539,6 +547,10 @@ export const translations = {
       allStatuses: "Alle Status",
       allPriorities: "Alle Prioritäten",
       returnedNote: "Diese Anfrage wurde zurückgesendet. Bitte überprüfen Sie die Notiz unten und aktualisieren Sie Ihre Anfrage.",
+      history: "Verlauf",
+      activity: "Aktivität",
+      noActivity: "Noch keine Aktivität aufgezeichnet",
+      viewHistory: "Verlauf anzeigen",
     },
     
     // Forms

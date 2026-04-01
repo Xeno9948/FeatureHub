@@ -35,6 +35,14 @@ export async function GET(
           },
           orderBy: { createdAt: "desc" },
         },
+        activities: {
+          include: {
+            user: {
+              select: { id: true, name: true, role: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
 
@@ -173,7 +181,6 @@ export async function PUT(
       };
     } else if (!action && existingRequest.createdById === user.id) {
       // Any role can edit their own requests when no workflow action is specified
-
       if (
         existingRequest.status !== RequestStatus.SUBMITTED &&
         existingRequest.status !== RequestStatus.RETURNED
@@ -221,6 +228,16 @@ export async function PUT(
       );
     }
 
+    // Capture changes for activity log
+    const changes: Record<string, { from: any; to: any }> = {};
+    for (const key of Object.keys(updateData)) {
+      const val = updateData[key];
+      const oldVal = (existingRequest as any)[key];
+      if (val !== undefined && JSON.stringify(val) !== JSON.stringify(oldVal)) {
+        changes[key] = { from: oldVal, to: val };
+      }
+    }
+
     const updatedRequest = await prisma.request.update({
       where: { id: params.id },
       data: updateData,
@@ -231,162 +248,111 @@ export async function PUT(
         category: {
           select: { id: true, name: true, color: true },
         },
-        attachments: true,
-        notes: {
-          include: {
-            user: {
-              select: { id: true, name: true, role: true },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-        },
       },
     });
 
-    if (action === "return_to_submitter" && updatedRequest.createdBy?.email) {
-      const appUrl = process.env.NEXTAUTH_URL || "";
-      const notes = user.role === Role.SUPPORT ? supportNotes : adminNotes;
-      const htmlBody = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; border: 1px solid #e5e7eb; padding: 30px;">
-          <div style="text-align: center; padding-bottom: 20px;">
-            ${appUrl ? `<img src="${appUrl}/logo.jpg" alt="Klantenvertellen" style="max-height: 45px; margin: 0 auto;" />` : `<h2 style="color: #ea580c; margin: 0;">Klantenvertellen</h2>`}
-          </div>
-          <h2 style="color: #333; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-top: 0;">
-            ⚠️ Verzoek Teruggestuurd
-          </h2>
-          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="color: #1f2937;">Hallo ${updatedRequest.createdBy.name || 'Gebruiker'},</p>
-            <p style="color: #1f2937;">Je functieverzoek <strong>"${updatedRequest.title}"</strong> is teruggestuurd omdat we extra informatie nodig hebben.</p>
-            <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #ea580c; margin-top: 15px;">
-              <strong>Notitie van beheerder:</strong><br/>
-              ${(notes || "").replace(/\n/g, '<br>')}
-            </div>
-          </div>
-          ${appUrl ? `<p style="margin-top: 20px; text-align: center;"><a href="${appUrl}/dashboard/request/${updatedRequest.id}" style="background: #ea580c; color: #ffffff !important; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: bold;">Verzoek Bewerken</a></p>` : ''}
-        </div>
-      `;
-
-      try {
-        await sendEmail({
-          to: updatedRequest.createdBy.email,
-          subject: `Actie vereist: Functieverzoek "${updatedRequest.title}"`,
-          htmlBody: htmlBody,
-        });
-
-        await prisma.emailLog.create({
-          data: {
-            recipientEmail: updatedRequest.createdBy.email,
-            subject: `Actie vereist: Functieverzoek "${updatedRequest.title}"`,
-            body: htmlBody,
-            status: "SENT",
-          },
-        });
-      } catch (err: any) {
-        console.error("Failed to send return email:", err);
-      }
-    }
-
-    if (action === "return_to_support") {
-      // Notify all users with SUPPORT role
-      const supportUsers = await prisma.user.findMany({
-        where: { role: Role.SUPPORT, emailNotifications: true },
-        select: { email: true, name: true }
+    // Create Activity Log if there were changes
+    if (Object.keys(changes).length > 0) {
+      await prisma.activityLog.create({
+        data: {
+          action: action ? `ACTION_${action.toUpperCase()}` : "UPDATED",
+          details: JSON.stringify(changes),
+          userId: user.id,
+          requestId: params.id,
+        },
       });
 
-      if (supportUsers.length > 0) {
+      // Send Email Notifications
+      try {
         const appUrl = process.env.NEXTAUTH_URL || "";
-        const htmlBody = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; border: 1px solid #e5e7eb; padding: 30px;">
-            <div style="text-align: center; padding-bottom: 20px;">
-              ${appUrl ? `<img src="${appUrl}/logo.jpg" alt="Klantenvertellen" style="max-height: 45px; margin: 0 auto;" />` : `<h2 style="color: #ea580c; margin: 0;">Klantenvertellen</h2>`}
+        const isCreatorEdit = !action && user.id === existingRequest.createdById;
+        const modifiedBy = user.name || user.email;
+
+        // Base notification body
+        const notificationHtml = `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
+            <div style="background-color: #ea580c; padding: 20px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 20px;">Request Update</h1>
             </div>
-            <h2 style="color: #333; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-top: 0;">
-              🔄 Verzoek Teruggestuurd naar Support
-            </h2>
-            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <p style="color: #1f2937;">Een functieverzoek is teruggestuurd door de admin voor aanvullende support review.</p>
-              <h3 style="margin: 15px 0 5px 0; color: #1f2937;">${updatedRequest.title}</h3>
-              <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #ea580c; margin-top: 15px;">
-                <strong>Notitie van admin:</strong><br/>
-                ${(adminNotes || "").replace(/\n/g, '<br>')}
+            <div style="padding: 24px; color: #374151;">
+              <p>The request <strong>"${updatedRequest.title}"</strong> has been updated by <strong>${modifiedBy}</strong>.</p>
+              
+              <div style="background-color: #f9fafb; padding: 16px; border-radius: 6px; margin: 16px 0;">
+                <h3 style="margin-top: 0; font-size: 14px; color: #6b7280; text-transform: uppercase;">Changes:</h3>
+                <ul style="margin: 0; padding-left: 20px; font-size: 14px;">
+                  ${Object.entries(changes).map(([field, vals]) => `
+                    <li style="margin-bottom: 8px;">
+                      <strong>${field}:</strong> 
+                      <span style="color: #991b1b; text-decoration: line-through; opacity: 0.7;">${vals.from || 'none'}</span> 
+                      &rarr; 
+                      <span style="color: #166534; font-weight: bold;">${vals.to || 'none'}</span>
+                    </li>
+                  `).join('')}
+                </ul>
               </div>
+
+              ${appUrl ? `<div style="text-align: center; margin-top: 32px;">
+                <a href="${appUrl}/dashboard/request/${updatedRequest.id}" style="background-color: #ea580c; color: white !important; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: bold;">View Request</a>
+              </div>` : ''}
             </div>
-            ${appUrl ? `<p style="margin-top: 20px; text-align: center;"><a href="${appUrl}/dashboard/request/${updatedRequest.id}" style="background: #ea580c; color: #ffffff !important; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: bold;">Bekijk Verzoek</a></p>` : ''}
+            <div style="background-color: #f3f4f6; padding: 16px; text-align: center; font-size: 12px; color: #6b7280;">
+              This is an automated notification from FeatureHub.
+            </div>
           </div>
         `;
 
-        for (const u of supportUsers) {
-          if (u.email) {
-            try {
-              await sendEmail({
-                to: u.email,
-                subject: `Actie vereist: Functieverzoek "${updatedRequest.title}" terug naar Support`,
-                htmlBody: htmlBody,
-              });
+        // Case 1: Creator (USER) edited the request -> Notify Support/Admin
+        if (isCreatorEdit) {
+          const systemSetting = await prisma.systemSetting.findUnique({ where: { id: "global" } });
+          const defaultEmails = systemSetting ? systemSetting.notificationEmails : "schouwman@ekomi-group.com";
+          const recipientEmails = defaultEmails.split(",").map((e: string) => e.trim()).filter((e: string) => e);
 
-              await prisma.emailLog.create({
-                data: {
-                  recipientEmail: u.email,
-                  subject: `Actie vereist: Functieverzoek "${updatedRequest.title}" terug naar Support`,
-                  body: htmlBody,
-                  status: "SENT",
-                },
-              });
-            } catch (err: any) {
-              console.error("Failed to send return-to-support email:", err);
-            }
+          const supportUsers = await prisma.user.findMany({
+            where: { role: Role.SUPPORT, emailNotifications: true },
+            select: { email: true }
+          });
+          
+          supportUsers.forEach(u => {
+            if (u.email && !recipientEmails.includes(u.email)) recipientEmails.push(u.email);
+          });
+
+          for (const recipient of recipientEmails) {
+            await sendEmail({
+              to: recipient,
+              subject: `Request Updated by Creator: ${updatedRequest.title}`,
+              htmlBody: notificationHtml,
+            });
+          }
+        } 
+        // Case 2: Workflow action (e.g. Return to Submitter) -> Notify Creator
+        else if (action === "return_to_submitter") {
+           if (updatedRequest.createdBy.email) {
+             // We can use the more specific "Returned" template from before or this generic one
+             await sendEmail({
+               to: updatedRequest.createdBy.email,
+               subject: `Action Required: Request Returned - ${updatedRequest.title}`,
+               htmlBody: notificationHtml,
+             });
+           }
+        }
+        // Case 3: Admin/Support edited (status change, etc.) -> Notify Creator
+        else if (updatedRequest.createdById !== user.id) {
+          if (updatedRequest.createdBy.email) {
+            await sendEmail({
+              to: updatedRequest.createdBy.email,
+              subject: `Update to your Request: ${updatedRequest.title}`,
+              htmlBody: notificationHtml,
+            });
           }
         }
+      } catch (err) {
+        console.error("Failed to send update notification:", err);
       }
     }
 
     return NextResponse.json(updatedRequest);
   } catch (error) {
     console.error("Update request error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = session.user as any;
-    const existingRequest = await prisma.request.findUnique({
-      where: { id: params.id },
-    });
-
-    if (!existingRequest) {
-      return NextResponse.json({ error: "Request not found" }, { status: 404 });
-    }
-
-    // Only creator (while submitted) or admin can delete
-    if (
-      user.role === Role.ADMIN ||
-      (existingRequest.createdById === user.id &&
-        existingRequest.status === RequestStatus.SUBMITTED)
-    ) {
-      await prisma.request.delete({
-        where: { id: params.id },
-      });
-      return NextResponse.json({ success: true });
-    }
-
-    return NextResponse.json(
-      { error: "Unauthorized to delete this request" },
-      { status: 403 }
-    );
-  } catch (error) {
-    console.error("Delete request error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

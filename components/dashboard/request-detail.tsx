@@ -21,6 +21,7 @@ import {
   Tag,
   Paperclip,
   Pencil,
+  History,
 } from "lucide-react";
 
 interface Attachment {
@@ -30,14 +31,28 @@ interface Attachment {
   isPublic: boolean;
 }
 
+interface ActivityLog {
+  id: string;
+  action: string;
+  details: string | null;
+  createdAt: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string | null;
+    role: string;
+  };
+}
+
 interface Request {
   id: string;
   title: string;
   description: string;
-  businessJustification: string | null;
-  reason: string | null;
   status: string;
   priority: string | null;
+  finalPriority: string | null;
+  businessJustification: string | null;
+  reason: string | null;
   supportNotes: string | null;
   adminNotes: string | null;
   declineReason: string | null;
@@ -45,8 +60,10 @@ interface Request {
   updatedAt: string;
   requestedBy: string | null;
   createdBy: { id: string; name: string | null; email: string };
-  category: { name: string; color: string } | null;
+  category: { id: string; name: string; color: string } | null;
   attachments: Attachment[];
+  notes: any[];
+  activities: ActivityLog[];
 }
 
 const statusIcons: Record<string, any> = {
@@ -297,6 +314,67 @@ export function RequestDetail({ requestId }: { requestId: string }) {
           )}
         </div>
       </div>
+
+      {/* Activity History */}
+      <Card>
+        <CardHeader className="flex flex-row items-center gap-2">
+          <History className="w-5 h-5 text-muted-foreground" />
+          <CardTitle className="text-lg">{(t.common as any).history}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {request.activities.length === 0 ? (
+            <p className="text-muted-foreground text-sm py-4">{(t.common as any).noActivity}</p>
+          ) : (
+            <div className="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+              {request.activities.map((activity) => {
+                let details = null;
+                try {
+                  details = activity.details ? JSON.parse(activity.details) : null;
+                } catch (e) {
+                  details = null;
+                }
+
+                return (
+                  <div key={activity.id} className="relative flex items-center justify-between gap-6 pl-12 group">
+                    <div className="absolute left-0 grid place-items-center w-10 h-10 bg-white border-2 border-orange-500 rounded-full shadow-sm z-10">
+                      <div className="w-2.5 h-2.5 rounded-full bg-orange-600 animate-pulse"></div>
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm">{activity.user.name || "System"}</span>
+                        <Badge variant="outline" className="text-[10px] px-1 h-4 uppercase font-bold text-muted-foreground">
+                          {activity.user.role}
+                        </Badge>
+                        <span className="text-muted-foreground text-xs">
+                          {new Date(activity.createdAt).toLocaleString(language === "nl" ? "nl-NL" : "en-GB")}
+                        </span>
+                      </div>
+                      <p className="text-sm">
+                        <span className="font-medium text-orange-600">
+                          {activity.action === "UPDATED" ? (language === "nl" ? "Bewerkt" : "Updated") : 
+                           activity.action.startsWith("ACTION_") ? activity.action.replace("ACTION_", "").replace(/_/g, " ") : 
+                           activity.action}
+                        </span>
+                      </p>
+                      {details && Object.keys(details).length > 0 && (
+                        <div className="mt-2 text-xs grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {Object.entries(details).map(([field, vals]: [string, any]) => (
+                            <div key={field} className="bg-slate-50 p-2 rounded border border-slate-100 italic">
+                              <span className="font-bold text-slate-500">{field}:</span>{" "}
+                              <span className="text-red-400 line-through opacity-70">{String(vals.from)}</span>{" "}
+                              &rarr; <span className="text-green-600 font-medium">{String(vals.to)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
