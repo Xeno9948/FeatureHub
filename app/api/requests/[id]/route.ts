@@ -172,10 +172,13 @@ export async function PUT(
           : { adminNotes: adminNotes || existingRequest.adminNotes }),
       };
     } else if (user.role === Role.USER && existingRequest.createdById === user.id) {
-      // Users can only update their own requests that are still submitted
-      if (existingRequest.status !== RequestStatus.SUBMITTED) {
+      // Users can only update their own requests that are SUBMITTED or RETURNED
+      if (
+        existingRequest.status !== RequestStatus.SUBMITTED &&
+        existingRequest.status !== RequestStatus.RETURNED
+      ) {
         return NextResponse.json(
-          { error: "Can only edit requests that are still submitted" },
+          { error: "Can only edit requests that are submitted or returned" },
           { status: 400 }
         );
       }
@@ -185,7 +188,31 @@ export async function PUT(
         ...(businessJustification !== undefined && { businessJustification }),
         ...(reason !== undefined && { reason }),
         ...(categoryId !== undefined && { categoryId }),
+        ...(body.requestedBy !== undefined && { requestedBy: body.requestedBy }),
       };
+
+      // Handle attachment changes: add new, remove deleted
+      const { newAttachments, removedAttachmentIds } = body;
+      if (removedAttachmentIds?.length) {
+        await prisma.attachment.deleteMany({
+          where: {
+            id: { in: removedAttachmentIds },
+            requestId: params.id,
+          },
+        });
+      }
+      if (newAttachments?.length) {
+        await prisma.attachment.createMany({
+          data: newAttachments.map((att: any) => ({
+            fileName: att.fileName,
+            cloudStoragePath: att.cloudStoragePath,
+            isPublic: att.isPublic || false,
+            contentType: att.contentType,
+            size: att.size,
+            requestId: params.id,
+          })),
+        });
+      }
     } else {
       return NextResponse.json(
         { error: "Unauthorized action" },

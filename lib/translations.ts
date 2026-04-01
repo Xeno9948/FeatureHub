@@ -52,6 +52,7 @@ export const translations = {
       submit: "Indienen",
       delete: "Verwijderen",
       edit: "Bewerken",
+      editRequest: "Verzoek Bewerken",
       view: "Bekijken",
       search: "Zoeken",
       filter: "Filter",
@@ -63,6 +64,7 @@ export const translations = {
       attachments: "Bijlagen",
       allStatuses: "Alle Statussen",
       allPriorities: "Alle Prioriteiten",
+      returnedNote: "Dit verzoek is teruggestuurd. Bekijk de notitie hieronder en pas uw verzoek aan.",
     },
     
     // Forms
@@ -106,6 +108,8 @@ export const translations = {
     messages: {
       submitSuccess: "Functieverzoek succesvol ingediend!",
       submitError: "Fout bij indienen verzoek",
+      updateSuccess: "Verzoek succesvol bijgewerkt!",
+      updateError: "Fout bij bijwerken verzoek",
       titleDescriptionRequired: "Titel en beschrijving zijn verplicht",
       noteAdded: "Notitie toegevoegd",
       noteError: "Fout bij toevoegen notitie",
@@ -285,6 +289,7 @@ export const translations = {
       submit: "Submit",
       delete: "Delete",
       edit: "Edit",
+      editRequest: "Edit Request",
       view: "View",
       search: "Search",
       filter: "Filter",
@@ -296,6 +301,7 @@ export const translations = {
       attachments: "Attachments",
       allStatuses: "All Statuses",
       allPriorities: "All Priorities",
+      returnedNote: "This request has been returned. Please review the note below and update your request.",
     },
     
     // Forms
@@ -339,6 +345,8 @@ export const translations = {
     messages: {
       submitSuccess: "Feature request submitted successfully!",
       submitError: "Error submitting request",
+      updateSuccess: "Request updated successfully!",
+      updateError: "Error updating request",
       titleDescriptionRequired: "Title and description are required",
       noteAdded: "Note added",
       noteError: "Error adding note",
@@ -518,6 +526,7 @@ export const translations = {
       submit: "Einreichen",
       delete: "Löschen",
       edit: "Bearbeiten",
+      editRequest: "Anfrage bearbeiten",
       view: "Ansicht",
       search: "Suche",
       filter: "Filter",
@@ -529,6 +538,7 @@ export const translations = {
       attachments: "Anhänge",
       allStatuses: "Alle Status",
       allPriorities: "Alle Prioritäten",
+      returnedNote: "Diese Anfrage wurde zurückgesendet. Bitte überprüfen Sie die Notiz unten und aktualisieren Sie Ihre Anfrage.",
     },
     
     // Forms
@@ -572,6 +582,8 @@ export const translations = {
     messages: {
       submitSuccess: "Funktionsanfrage erfolgreich eingereicht!",
       submitError: "Fehler beim Einreichen der Anfrage",
+      updateSuccess: "Anfrage erfolgreich aktualisiert!",
+      updateError: "Fehler beim Aktualisieren der Anfrage",
       titleDescriptionRequired: "Titel und Beschreibung sind erforderlich",
       noteAdded: "Notiz hinzugefügt",
       noteError: "Fehler beim Hinzufügen der Notiz",

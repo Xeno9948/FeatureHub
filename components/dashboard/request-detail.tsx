@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ import {
   Calendar,
   Tag,
   Paperclip,
+  Pencil,
 } from "lucide-react";
 
 interface Attachment {
@@ -42,7 +44,7 @@ interface Request {
   createdAt: string;
   updatedAt: string;
   requestedBy: string | null;
-  createdBy: { name: string | null; email: string };
+  createdBy: { id: string; name: string | null; email: string };
   category: { name: string; color: string } | null;
   attachments: Attachment[];
 }
@@ -75,8 +77,11 @@ const priorityColors: Record<string, string> = {
 export function RequestDetail({ requestId }: { requestId: string }) {
   const router = useRouter();
   const { t, language } = useLanguage();
+  const { data: session } = useSession();
   const [request, setRequest] = useState<Request | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const currentUserId = (session?.user as any)?.id;
 
   useEffect(() => {
     fetchRequest();
@@ -133,6 +138,11 @@ export function RequestDetail({ requestId }: { requestId: string }) {
   }
 
   const StatusIcon = statusIcons[request.status] || FileText;
+  const canEdit =
+    currentUserId &&
+    request.createdBy &&
+    (request.createdBy as any).id === currentUserId &&
+    (request.status === "SUBMITTED" || request.status === "RETURNED");
 
   return (
     <div className="space-y-6">
@@ -160,6 +170,16 @@ export function RequestDetail({ requestId }: { requestId: string }) {
             )}
           </div>
         </div>
+        {canEdit && (
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/dashboard/request/${requestId}/edit`)}
+            className="flex items-center gap-2 border-orange-300 text-orange-600 hover:bg-orange-50"
+          >
+            <Pencil className="w-4 h-4" />
+            {(t.common as any).editRequest}
+          </Button>
+        )}
       </div>
 
       {/* Request Info */}

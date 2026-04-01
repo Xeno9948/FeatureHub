@@ -15,6 +15,7 @@ import {
   FileText,
   ChevronRight,
   PlusCircle,
+  Pencil,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -145,7 +146,23 @@ export function MyRequestsList() {
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {(request.status === "SUBMITTED" || request.status === "RETURNED") && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/dashboard/request/${request.id}/edit`);
+                    }}
+                    className="text-orange-500 hover:text-orange-600 hover:bg-orange-50"
+                    title={language === "nl" ? "Bewerken" : "Edit"}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                )}
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </div>
               </div>
             </CardContent>
           </Card>
